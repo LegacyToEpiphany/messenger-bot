@@ -39,20 +39,26 @@
 
 (def statefull_database {:1303278973030229
                          {:current_context {:id :date_context
-                                            :current_action :filter_movies_by_date}}})
-
+                                            :current_action :filter_movies_by_category}}})
+;; Context
 (def context_by_date {:id :date_context
-                      :actions [:filter_movies_by_date]})
+                      :actions [:filter_movies_by_date :filter_movies_by_category]})
 
-(def action_find_movies_by_date {:id        :filter_movies_by_date
-                                  :action_fn (fn [input] (println "action Find Movies By Date"))
-                                  :helper_fn :filter_movies_by_date_template})
+;; Actions
+(def actions {:filter_movies_by_date
+              {:action_fn (fn [input] (println "Action Find Movies By Date"))
+               :helper_fn :filter_movies_by_date_template}
+              :filter_movies_by_category
+              {:action_fn (fn [input] (println "Action Find Movies By Category"))
+               :helper_fn :filter_movies_by_category_template}})
 
-(def helper_find_movies_by_date {:id             :filter_movies_by_date_template
-                                 :explanation_fn (fn [] (println "build some button or text"))
-                                 :validation_fn  (fn [input] true)})
-
-
+;; Helpers
+(def helpers {:filter_movies_by_date_template
+              {:explanation_fn (fn [input] (println "build some button or text"))
+               :validation_fn  (fn [input] true)}
+              :filter_movies_by_category_template
+              {:explanation_fn (fn [input] (println "build some button or text"))
+               :validation_fn  (fn [input] true)}})
 
 ;; 1) bon user ? => oui (sinon default context mais à voir plus tard)
 ;; 2) Check le current context
@@ -65,10 +71,11 @@
 (let [sender-id (keyword (str (get-in entry [:sender :id])))]
   (if-let [sender-status (get statefull_database sender-id)]
     (let [current-action (get-in sender-status [:current_context :current_action])
+          current-helper (get-in actions [current-action :helper_fn])
           user-input (get-in entry [:message :text])
-          validation-fn (:validation_fn helper_find_movies_by_date)
-          action-fn (:action_fn action_find_movies_by_date)
-          explanation-fn (:explanation_fn helper_find_movies_by_date)]
+          validation-fn (get-in helpers [current-helper :validation_fn])
+          action-fn (get-in actions [current-action :action_fn])
+          explanation-fn (get-in helpers [current-helper :explanation_fn])]
       (if (validation-fn user-input)
         (action-fn user-input)
         (explanation-fn user-input)))
