@@ -1,5 +1,12 @@
 (ns movie-finder.bots.context)
 
+;; on va simuler qu'on est dans un contexte
+;; 1) On crée l'atom avec la datastructure courante
+;; 2) On crée la logique de (si je suis dans cet état, je lance le helper)
+;; 3) On renvoie du text comme liste de film
+;; 4) On crée la logique d'enregistrement de l'état courant (input, etc)
+;; Objectif: je suis dans un état donné => je renvoie le helper => si réponse valide, j'affiche bravo
+
 
 ;; Context which describe a potential conversation type
 {:context
@@ -25,7 +32,7 @@
  :validation_fn "validation_fn"}
 
 ;; How to describe current situation ?
-{:123456789
+{:1303278973030229
  {:current_context
                 {:id :simplified_movie_search
                  :done_actions
