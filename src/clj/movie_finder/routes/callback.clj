@@ -16,11 +16,20 @@
     (params "hub.challenge")
     (response/bad-request! "Verify token not valid")))
 
-
-
-
-
+;; ========================== Webhook Router/Handler ==========================
+(defn webhook-router
+  "Routes webhook messages to it's processing function based on webhook type.
+  Note the Multiple responses are possible for each webhook type based on payload
+  or text/attachment... content."
+  [entries]
+  (dorun
+    (map (fn [{messaging :messaging}]
+           (dorun
+             (map (fn [message] (println message)) messaging)))
+         entries))
+  (response/ok))
 
 ;; ========================== Router definition ===============================
 (defroutes callback-routes
-           (GET "/callback" {params :query-params} (validate-webhook-token params)))
+           (GET "/callback" {params :query-params} (validate-webhook-token params))
+           (POST "/callback" {params :body} (webhook-router (:entry params))))
