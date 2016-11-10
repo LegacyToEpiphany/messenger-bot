@@ -3,9 +3,6 @@
             [ring.util.http-response :as response]
             [movie-finder.config :refer [env]]))
 
-(def ^:private facebook-graph-url "https://graph.facebook.com/v2.6")
-(def ^:private message-uri "/me/messages")
-
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
   "Validate query-params map according to user's defined webhook-token.
@@ -58,16 +55,16 @@
                :validation_fn  (fn [input] true)}
               :filter_movies_by_category_template
               {:explanation_fn (fn [input] (println "build some button or text"))
-               :validation_fn  (fn [input] true)}})
+               :validation_fn  (fn [input] false)}})
 
-;; 1) bon user ? => oui (sinon default context mais à voir plus tard)
-;; 2) Check le current context
-;; 3) Check la current action
-;; 4) a) input valide => renvoyer le résultat (enregistrer l'input correct)
-;;    b) input non-valide => renvoyer le helper
 
 (def entry {})
 
+;; WIP About how to route everything ^^
+;; Questions :
+;; A) Qu'est-ce qui se passe si le sender n'existe pas ?
+;; B) Comment sauvegarder l'état de l'input
+;; C) qu'est-c
 (let [sender-id (keyword (str (get-in entry [:sender :id])))]
   (if-let [sender-status (get statefull_database sender-id)]
     (let [current-action (get-in sender-status [:current_context :current_action])
