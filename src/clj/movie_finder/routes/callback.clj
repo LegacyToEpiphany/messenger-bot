@@ -2,7 +2,8 @@
   (:require [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :as response]
             [movie-finder.config :refer [env]]
-            [movie-finder.bots.network :refer [post-messenger]]))
+            [movie-finder.bots.network :refer [post-messenger]]
+            [clojure.set :refer [difference]]))
 
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
@@ -16,12 +17,15 @@
 
 ;; ========================== WIP - Data simulation ===========================
 
-(def statefull_database {:1303278973030229
-                         {:current_context {:id :date_context
-                                            :current_action :filter_movies_by_category}}})
+(def statefull_database (atom {:1303278973030229
+                               {:current_context {:id             :date_context
+                                                  :current_action :filter_movies_by_category
+                                                  :done_actions #{}
+                                                  :done_inputs {}}}}))
 ;; Context
-(def context_by_date {:id :date_context
-                      :actions [:filter_movies_by_date :filter_movies_by_category]})
+(def context_by_date {:id      :date_context
+                      :actions #{:filter_movies_by_date :filter_movies_by_category}
+                      :helper_id :context_template})
 
 ;; Actions
 ;; Deal with all data filtering, validation, API calls
@@ -48,25 +52,37 @@
                                         :error_template_fn       (fn [user-id error]
                                                                    (post-messenger user-id {:text "I don't understand what you told me ^^"}))
                                         :information_template_fn (fn [user-id input]
-                                                                   (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}})
+                                                                   (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}
+   :context_template {:information_template_fn (fn [user-id]
+                                                 (post-messenger user-id {:text "What filter do you want to choose ? A or B"}))}})
 
 
-(def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "test"}})
+(def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "Action"}})
 
 (defn compute-entry [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]
-    (if-let [sender-status (get statefull_database sender-id)]
+    (if-let [sender-status (get @statefull_database sender-id)]
       (let [user-input (get-in entry [:message :text])
             current-action (get-in sender-status [:current_context :current_action])
             current-helper (get-in actions [current-action :helper_id])
             validate-input-fn (get-in actions [current-action :validate_input_fn])
             action-fn (get-in actions [current-action :action_fn])
+
+            ;; Template side
             result-template-fn (get-in helpers [current-helper :result_template_fn])
             error-template-fn (get-in helpers [current-helper :error_template_fn])
             information-template-fn (get-in helpers [current-helper :information_template_fn])]
         (if (validate-input-fn user-input)
           (if-let [output (action-fn user-input)]
-            (result-template-fn sender-id output))
+            (do
+              (result-template-fn sender-id output)
+              (swap! statefull_database update-in [sender-id :current_context :done_actions] conj current-action)
+              (swap! statefull_database assoc-in [sender-id :current_context :done_inputs] {current-action user-input})
+              (swap! statefull_database assoc-in [sender-id :current_context :current_action] :none)
+              (if (empty? (difference (:actions context_by_date) (get-in @statefull_database [sender-id :current_context :done_actions])))
+                (swap! statefull_database assoc-in [sender-id :current_context :current_action] :done)
+                (let [context-template (get-in helpers [:context_template :information_template_fn])]
+                  (context-template sender-id)))))
           (do
             (error-template-fn sender-id user-input)
             (information-template-fn sender-id user-input))))
