@@ -27,9 +27,9 @@
  :helper_id "helper_fn_1"}
 
 ;; Helper template
-{:id                "filter_movies_by_date_template"
- :information_fn    "explanation_fn"
- :validate_input_fn "validation_fn"}
+{:id                      "filter_movies_by_date_template"
+ :information_template_fn "explanation_fn"
+ :validate_input_fn       "validation_fn"}
 
 ;; How to describe current situation ?
 {:1303278973030229

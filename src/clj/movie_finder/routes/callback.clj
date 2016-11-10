@@ -40,13 +40,13 @@
 ;; Helpers
 ;; Deal with displaying user result, information or error
 (def helpers
-  {:filter_movies_by_date_template {:result_fn      (fn [user-id input] "show success")
-                                    :error_fn       (fn [error] true)
-                                    :information_fn (fn [user-id input] (println "build some button or text"))}
-   :filter_movies_by_category_template {:result_fn      (fn [user-id input]
+  {:filter_movies_by_date_template {:result_template_fn      (fn [user-id input] "show success")
+                                    :error_template_fn       (fn [error] true)
+                                    :information_template_fn (fn [user-id input] (println "build some button or text"))}
+   :filter_movies_by_category_template {:result_template_fn      (fn [user-id input]
                                                       (post-messenger user-id {:text "This is a success :-)"}))
-                                        :error_fn       (fn [error] true)
-                                        :information_fn (fn [user-id input]
+                                        :error_template_fn       (fn [error] true)
+                                        :information_template_fn (fn [user-id input]
                                                           (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}})
 
 
@@ -60,13 +60,13 @@
             current-helper (get-in actions [current-action :helper_id])
             validate-input-fn (get-in actions [current-action :validate_input_fn])
             action-fn (get-in actions [current-action :action_fn])
-            result-fn (get-in helpers [current-helper :result_fn])
-            error-fn (get-in helpers [current-helper :error_fn])
-            information-fn (get-in helpers [current-helper :information_fn])]
+            result-template-fn (get-in helpers [current-helper :result_template_fn])
+            error-template-fn (get-in helpers [current-helper :error_template_fn])
+            information-template-fn (get-in helpers [current-helper :information_template_fn])]
         (if (validate-input-fn user-input)
           (if-let [output (action-fn user-input)]
-            (result-fn sender-id output))
-          (information-fn sender-id user-input)))
+            (result-template-fn sender-id output))
+          (information-template-fn sender-id user-input)))
       false)))
 
 ;; ========================== Webhook Router/Handler ==========================
