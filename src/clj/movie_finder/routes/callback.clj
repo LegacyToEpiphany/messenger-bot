@@ -41,13 +41,14 @@
 ;; Deal with displaying user result, information or error
 (def helpers
   {:filter_movies_by_date_template {:result_template_fn      (fn [user-id input] "show success")
-                                    :error_template_fn       (fn [error] true)
+                                    :error_template_fn       (fn [user-id error] true)
                                     :information_template_fn (fn [user-id input] (println "build some button or text"))}
    :filter_movies_by_category_template {:result_template_fn      (fn [user-id input]
                                                       (post-messenger user-id {:text "This is a success :-)"}))
-                                        :error_template_fn       (fn [error] true)
+                                        :error_template_fn       (fn [user-id error]
+                                                                   (post-messenger user-id {:text "I don't understand what you told me ^^"}))
                                         :information_template_fn (fn [user-id input]
-                                                          (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}})
+                                                                   (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}})
 
 
 (def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "test"}})
@@ -66,7 +67,9 @@
         (if (validate-input-fn user-input)
           (if-let [output (action-fn user-input)]
             (result-template-fn sender-id output))
-          (information-template-fn sender-id user-input)))
+          (do
+            (error-template-fn sender-id user-input)
+            (information-template-fn sender-id user-input))))
       false)))
 
 ;; ========================== Webhook Router/Handler ==========================
