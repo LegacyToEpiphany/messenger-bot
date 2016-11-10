@@ -27,25 +27,26 @@
 ;; Deal with all data filtering, validation, API calls
 ;; Is not supposed to handle user discussion
 (def actions
-  {:filter_movies_by_date {:validation_fn (fn [input] true)
-                           :action_fn     (fn [input] (println "Action Find Movies By Date"))
-                           :helper_fn     :filter_movies_by_date_template}
-   :filter_movies_by_category {:validation_fn (fn [input]
+  {:filter_movies_by_date {:validate_input_fn (fn [input] true)
+                           :action_fn         (fn [input] (println "Action Find Movies By Date"))
+                           :helper_id         :filter_movies_by_date_template}
+   :filter_movies_by_category {:validate_input_fn (fn [input]
                                                 (if (some #{input} #{"Action" "Comedy"})
                                                   true))
-                               :action_fn     (fn [input]
+                               :action_fn         (fn [input]
                                                 [{:title "Tarzan"} {:title "Batman"}])
-                               :helper_fn     :filter_movies_by_category_template}})
+                               :helper_id         :filter_movies_by_category_template}})
 
 ;; Helpers
+;; Deal with displaying user result, information or error
 (def helpers
-  {:filter_movies_by_date_template {:success_fn    (fn [user-id input] "show success")
-                                    :error_fn (fn [error] true)
-                                    :explanation_fn (fn [user-id input] (println "build some button or text"))}
-   :filter_movies_by_category_template {:success_fn (fn [user-id input]
+  {:filter_movies_by_date_template {:result_fn      (fn [user-id input] "show success")
+                                    :error_fn       (fn [error] true)
+                                    :information_fn (fn [user-id input] (println "build some button or text"))}
+   :filter_movies_by_category_template {:result_fn      (fn [user-id input]
                                                       (post-messenger user-id {:text "This is a success :-)"}))
-                                        :error_fn (fn [error] true)
-                                        :explanation_fn (fn [user-id input]
+                                        :error_fn       (fn [error] true)
+                                        :information_fn (fn [user-id input]
                                                           (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}})
 
 
@@ -56,16 +57,16 @@
     (if-let [sender-status (get statefull_database sender-id)]
       (let [user-input (get-in entry [:message :text])
             current-action (get-in sender-status [:current_context :current_action])
-            current-helper (get-in actions [current-action :helper_fn])
-            validation-fn (get-in actions [current-action :validation_fn])
+            current-helper (get-in actions [current-action :helper_id])
+            validate-input-fn (get-in actions [current-action :validate_input_fn])
             action-fn (get-in actions [current-action :action_fn])
-            success-fn (get-in helpers [current-helper :success_fn])
+            result-fn (get-in helpers [current-helper :result_fn])
             error-fn (get-in helpers [current-helper :error_fn])
-            explanation-fn (get-in helpers [current-helper :explanation_fn])]
-        (if (validation-fn user-input)
+            information-fn (get-in helpers [current-helper :information_fn])]
+        (if (validate-input-fn user-input)
           (if-let [output (action-fn user-input)]
-            (success-fn sender-id output))
-          (explanation-fn sender-id user-input)))
+            (result-fn sender-id output))
+          (information-fn sender-id user-input)))
       false)))
 
 ;; ========================== Webhook Router/Handler ==========================
