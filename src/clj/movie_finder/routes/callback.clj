@@ -23,9 +23,9 @@
                                                   :done_actions #{}
                                                   :done_inputs {}}}}))
 ;; Context
-(def context_by_date {:id      :date_context
-                      :actions #{:filter_movies_by_date :filter_movies_by_category}
-                      :helper_id :context_template})
+(def date_and_category_context {:id :date_context
+                                :actions      #{:filter_movies_by_date :filter_movies_by_category}
+                                :helper_id    :context_template})
 
 ;; Actions
 ;; Deal with all data filtering, validation, API calls
@@ -79,7 +79,7 @@
               (swap! statefull_database update-in [sender-id :current_context :done_actions] conj current-action)
               (swap! statefull_database assoc-in [sender-id :current_context :done_inputs] {current-action user-input})
               (swap! statefull_database assoc-in [sender-id :current_context :current_action] :none)
-              (if (empty? (difference (:actions context_by_date) (get-in @statefull_database [sender-id :current_context :done_actions])))
+              (if (empty? (difference (:actions date_and_category_context) (get-in @statefull_database [sender-id :current_context :done_actions])))
                 (swap! statefull_database assoc-in [sender-id :current_context :current_action] :done)
                 (let [context-template (get-in helpers [:context_template :information_template_fn])]
                   (context-template sender-id)))))
@@ -98,7 +98,6 @@
     (map (fn [{messaging :messaging}]
            (dorun
              (map (fn [message]
-                    (println message)
                     (compute-entry message)) messaging)))
          entries))
   (response/ok))
