@@ -54,9 +54,7 @@
 ;; ========================== FSM CONSUMPTION =================================
 
 (def adv (partial a/advance f))
-(def fsm (atom
-           (-> nil
-               (adv {:messenger-state :context-question}))))
+(def fsm (atom {}))
 
 ;; ========================== FSM TRANSITION FUNCTIONS ========================
 (def fsm-fn
@@ -92,21 +90,22 @@
     (map (fn [{messaging :messaging}]
            (dorun
              (map (fn [message]
-                    (time (let [sender-id (get-in message [:sender :id])
-                                input (get-in message [:message :text])]
-                            (println input)
-                            (loop [current-state (:messenger-state (peek (:messenger-pages (:value @fsm))))
-                                   next-state ((get-in fsm-fn [current-state :event_fn]) input)
-                                   next-action-fn (get-in fsm-fn [next-state :action_fn])]
-                              (try
-                                (swap! fsm adv {:messenger-state next-state})
-                                (next-action-fn sender-id input)
-                                (catch Exception e (str "caught exception: " (.getMessage e))))
-                              (let [next-next-state (get-in fsm-fn [next-state :event_fn])]
-                                (if (keyword? next-next-state)
-                                  (recur next-state
-                                         next-next-state
-                                         (get-in fsm-fn [next-next-state :action_fn])))))))) messaging)))
+                    (let [sender-id (keyword (str (get-in entry [:sender :id])))
+                          input (get-in message [:message :text])]
+                      (if-not (get @fsm sender-id)
+                        (swap! fsm update-in [sender-id] adv {:messenger-state :context-question}))
+                      (loop [current-state (:messenger-state (peek (:messenger-pages (:value (get @fsm sender-id)))))
+                             next-state ((get-in fsm-fn [current-state :event_fn]) input)
+                             next-action-fn (get-in fsm-fn [next-state :action_fn])]
+                        (try
+                          (swap! fsm update-in [sender-id] adv {:messenger-state next-state})
+                          (next-action-fn sender-id input)
+                          (catch Exception e (str "caught exception: " (.getMessage e))))
+                        (let [next-next-state (get-in fsm-fn [next-state :event_fn])]
+                          (if (keyword? next-next-state)
+                            (recur next-state
+                                   next-next-state
+                                   (get-in fsm-fn [next-next-state :action_fn]))))))) messaging)))
          entries))
   (response/ok))
 
