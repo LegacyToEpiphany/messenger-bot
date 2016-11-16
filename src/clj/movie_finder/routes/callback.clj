@@ -24,42 +24,8 @@
                                                   :current_action :filter_movies_by_category
                                                   :done_actions #{}
                                                   :done_inputs {}}}}))
-;; Context
-(def date_and_category_context {:id :date_context
-                                :actions      #{:filter_movies_by_date :filter_movies_by_category}
-                                :helper_id    :context_template})
 
-;; Actions
-;; Deal with all data filtering, validation, API calls
-;; Is not supposed to handle user discussion
-(def actions
-  {:filter_movies_by_date {:validate_input_fn (fn [input] true)
-                           :action_fn         (fn [input] (println "Action Find Movies By Date"))
-                           :helper_id         :filter_movies_by_date_template}
-   :filter_movies_by_category {:validate_input_fn (fn [input]
-                                                (if (some #{input} #{"Action" "Comedy"})
-                                                  true))
-                               :action_fn         (fn [input]
-                                                [{:title "Tarzan"} {:title "Batman"}])
-                               :helper_id         :filter_movies_by_category_template}})
-
-;; Helpers
-;; Deal with displaying user result, information or error
-(def helpers
-  {:filter_movies_by_date_template {:result_template_fn      (fn [user-id input] "show success")
-                                    :error_template_fn       (fn [user-id error] true)
-                                    :information_template_fn (fn [user-id input] (println "build some button or text"))}
-   :filter_movies_by_category_template {:result_template_fn      (fn [user-id input]
-                                                      (post-messenger user-id {:text "This is a success :-)"}))
-                                        :error_template_fn       (fn [user-id error]
-                                                                   (post-messenger user-id {:text "I don't understand what you told me ^^"}))
-                                        :information_template_fn (fn [user-id input]
-                                                                   (post-messenger user-id {:text "Choose a category bewteen Action and Comedy"}))}
-   :context_template {:information_template_fn (fn [user-id]
-                                                 (post-messenger user-id {:text "What filter do you want to choose ? A or B"}))}})
-
-
-(def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "Action"}})
+(def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "1987"}})
 
 ;; ========================== MESSENGER EXAMPLE ===============================
 (def messenger-states
@@ -94,21 +60,27 @@
 
 ;; ========================== FSM TRANSITION FUNCTIONS ========================
 (def fsm-fn
-  {:context-question      {:action_fn (fn [input] (println "Date or Category ?"))
-                           :event_fn  (fn [input] (if (= input "Date")
-                                                    :date-question))}
-   :date-question         {:action_fn (fn [sender-id] (println "Choose a date"))
-                           :event_fn  (fn [input] (if (number? (read-string "1987"))
+  {:context-question      {:action_fn (fn [sender-id input]
+                                        (post-messenger sender-id {:text "Date ou Category"}))
+                           :event_fn  (fn [input] (cond (= "Date" input) :date-question
+                                                        (= "Category" input) :category-question))}
+   :date-question         {:action_fn (fn [sender-id input]
+                                        (post-messenger sender-id {:text "What date are you interested in ?"}))
+                           :event_fn  (fn [input] (if (number? (read-string input))
                                                     :date-valid-answer
                                                     :date-question))}
-   :date-valid-answer     {:action_fn (fn [sender-id] (println "Thoses are the film for the date 1987"))
-                           :event_fn (fn [input] :context-question)}
-   :category-question     {:action_fn (fn [sender-id] (println "Choose a correct category"))
-                           :event_fn (fn [input] :category-valid-answer)}
-   :category-valid-answer {:action_fn (fn [sender-id] (println "Thoses are the film for the category action"))
-                           :event_fn (fn [input] :context-question)}
-   :default-context       {:action_fn (fn [sender-id] (println "Thoses are the film for the date 1987"))
-                           :event_fn (fn [input] :context-question)}})
+   :date-valid-answer     {:action_fn (fn [sender-id input]
+                                        (post-messenger sender-id {:text (str "You answered a valid one :" input)}))
+                           :event_fn :context-question}
+   :category-question     {:action_fn (fn [sender-id input]
+                                        (post-messenger sender-id {:text "Choose a category bewteen Action and Comedy"}))
+                           :event_fn  (fn [input] (if (some #{input} #{"Action" "Comedy"})
+                                                    :category-valid-answer))}
+   :category-valid-answer {:action_fn (fn [sender-id input]
+                                        (post-messenger sender-id {:text (str "You choose a valid category " input)}))
+                           :event_fn  :context-question}
+   :default-context       {:action_fn (fn [sender-id input] (println "Thoses are the film for the date 1987"))
+                           :event_fn  (fn [input] :context-question)}})
 
 ;; ========================== Webhook Router/Handler ==========================
 (defn webhook-router
@@ -120,15 +92,21 @@
     (map (fn [{messaging :messaging}]
            (dorun
              (map (fn [message]
-                    (let [sender-id (get-in message [:sender :id])
-                          input (get-in message [:message :text])
-                          current-state (:messenger-state (peek (:messenger-pages (:value @fsm))))
-                          next-state ((get-in fsm-fn [current-state :event_fn]) input)
-                          next-action-fn (get-in fsm-fn [next-state :action_fn])]
-                      (try
-                        (swap! fsm adv {:messenger-state next-state})
-                        (next-action-fn sender-id)
-                        (catch Exception e (str "caught exception: " (.getMessage e)))))) messaging)))
+                    (time (let [sender-id (get-in message [:sender :id])
+                                input (get-in message [:message :text])]
+                            (println input)
+                            (loop [current-state (:messenger-state (peek (:messenger-pages (:value @fsm))))
+                                   next-state ((get-in fsm-fn [current-state :event_fn]) input)
+                                   next-action-fn (get-in fsm-fn [next-state :action_fn])]
+                              (try
+                                (swap! fsm adv {:messenger-state next-state})
+                                (next-action-fn sender-id input)
+                                (catch Exception e (str "caught exception: " (.getMessage e))))
+                              (let [next-next-state (get-in fsm-fn [next-state :event_fn])]
+                                (if (keyword? next-next-state)
+                                  (recur next-state
+                                         next-next-state
+                                         (get-in fsm-fn [next-next-state :action_fn])))))))) messaging)))
          entries))
   (response/ok))
 
