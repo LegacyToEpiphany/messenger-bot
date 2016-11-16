@@ -3,7 +3,9 @@
             [ring.util.http-response :as response]
             [movie-finder.config :refer [env]]
             [movie-finder.bots.network :refer [post-messenger]]
-            [clojure.set :refer [difference]]))
+            [clojure.set :refer [difference]]
+            [automat.core :as a]
+            [automat.viz :refer [view]]))
 
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
@@ -59,34 +61,54 @@
 
 (def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "Action"}})
 
-(defn compute-entry [entry]
-  (let [sender-id (keyword (str (get-in entry [:sender :id])))]
-    (if-let [sender-status (get @statefull_database sender-id)]
-      (let [user-input (get-in entry [:message :text])
-            current-action (get-in sender-status [:current_context :current_action])
-            current-helper (get-in actions [current-action :helper_id])
-            validate-input-fn (get-in actions [current-action :validate_input_fn])
-            action-fn (get-in actions [current-action :action_fn])
+;; ========================== MESSENGER EXAMPLE ===============================
+(def messenger-states
+  [(a/* :context-question)
+   (a/or
+     (a/or [:date-question (a/? :date-question) :date-valid-answer
+            [(a/* :context-question)
+             (a/or [:category-question :category-valid-answer]
+                   :default-context)]]
+           [:category-question :category-valid-answer
+            [(a/* :context-question)
+             (a/or [:date-question :date-valid-answer]
+                   :default-context)]])
+     :default-context)])
 
-            ;; Template side
-            result-template-fn (get-in helpers [current-helper :result_template_fn])
-            error-template-fn (get-in helpers [current-helper :error_template_fn])
-            information-template-fn (get-in helpers [current-helper :information_template_fn])]
-        (if (validate-input-fn user-input)
-          (if-let [output (action-fn user-input)]
-            (do
-              (result-template-fn sender-id output)
-              (swap! statefull_database update-in [sender-id :current_context :done_actions] conj current-action)
-              (swap! statefull_database assoc-in [sender-id :current_context :done_inputs] {current-action user-input})
-              (swap! statefull_database assoc-in [sender-id :current_context :current_action] :none)
-              (if (empty? (difference (:actions date_and_category_context) (get-in @statefull_database [sender-id :current_context :done_actions])))
-                (swap! statefull_database assoc-in [sender-id :current_context :current_action] :done)
-                (let [context-template (get-in helpers [:context_template :information_template_fn])]
-                  (context-template sender-id)))))
-          (do
-            (error-template-fn sender-id user-input)
-            (information-template-fn sender-id user-input))))
-      false)))
+(def f
+  (a/compile
+    [(a/$ :init)
+     (a/interpose-$ :save messenger-states)
+     (a/$ :end)]
+    {:signal   :messenger-state
+     :reducers {:init (fn [m _] (assoc m :messenger-pages []))
+                :save (fn [m messenger] (update-in m [:messenger-pages] conj messenger))
+                :end  (fn [m _] (assoc m :offer? true))}}))
+
+;; ========================== FSM CONSUMPTION =================================
+
+(def adv (partial a/advance f))
+(def fsm (atom
+           (-> nil
+               (adv {:messenger-state :context-question}))))
+
+;; ========================== FSM TRANSITION FUNCTIONS ========================
+(def fsm-fn
+  {:context-question      {:action_fn (fn [input] (println "Date or Category ?"))
+                           :event_fn  (fn [input] (if (= input "Date")
+                                                    :date-question))}
+   :date-question         {:action_fn (fn [sender-id] (println "Choose a date"))
+                           :event_fn  (fn [input] (if (number? (read-string "1987"))
+                                                    :date-valid-answer
+                                                    :date-question))}
+   :date-valid-answer     {:action_fn (fn [sender-id] (println "Thoses are the film for the date 1987"))
+                           :event_fn (fn [input] :context-question)}
+   :category-question     {:action_fn (fn [sender-id] (println "Choose a correct category"))
+                           :event_fn (fn [input] :category-valid-answer)}
+   :category-valid-answer {:action_fn (fn [sender-id] (println "Thoses are the film for the category action"))
+                           :event_fn (fn [input] :context-question)}
+   :default-context       {:action_fn (fn [sender-id] (println "Thoses are the film for the date 1987"))
+                           :event_fn (fn [input] :context-question)}})
 
 ;; ========================== Webhook Router/Handler ==========================
 (defn webhook-router
@@ -98,7 +120,15 @@
     (map (fn [{messaging :messaging}]
            (dorun
              (map (fn [message]
-                    (compute-entry message)) messaging)))
+                    (let [sender-id (get-in message [:sender :id])
+                          input (get-in message [:message :text])
+                          current-state (:messenger-state (peek (:messenger-pages (:value @fsm))))
+                          next-state ((get-in fsm-fn [current-state :event_fn]) input)
+                          next-action-fn (get-in fsm-fn [next-state :action_fn])]
+                      (try
+                        (swap! fsm adv {:messenger-state next-state})
+                        (next-action-fn sender-id)
+                        (catch Exception e (str "caught exception: " (.getMessage e)))))) messaging)))
          entries))
   (response/ok))
 

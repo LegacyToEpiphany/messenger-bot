@@ -25,7 +25,8 @@
                  [ring/ring-defaults "0.2.1"]
                  [selmer "1.10.0"]
                  [clj-http "3.3.0"]
-                 [cheshire "5.6.1"]]
+                 [cheshire "5.6.1"]
+                 [automat "0.2.0"]]
 
   :min-lein-version "2.0.0"
 
