@@ -17,14 +17,6 @@
     (params "hub.challenge")
     (response/bad-request! "Verify token not valid")))
 
-;; ========================== WIP - Data simulation ===========================
-
-(def statefull_database (atom {:1303278973030229
-                               {:current_context {:id             :date_context
-                                                  :current_action :filter_movies_by_category
-                                                  :done_actions #{}
-                                                  :done_inputs {}}}}))
-
 (def entry {:sender {:id 1303278973030229} :recipient {:id 333972820299338} :timestamp 1478766542031 :message {:mid "mid.1478766542031:34f6671b53" :seq 10 :text "1987"}})
 
 ;; ========================== MESSENGER EXAMPLE ===============================
@@ -68,8 +60,57 @@
                                                     :date-valid-answer
                                                     :date-question))}
    :date-valid-answer     {:action_fn (fn [sender-id input]
-                                        (post-messenger sender-id {:text (str "You answered a valid one :" input)}))
-                           :event_fn :context-question}
+                                        (post-messenger sender-id  {:attachment
+                                                                    {:type "template"
+                                                                     :payload
+                                                                           {:template_type "list"
+                                                                            :top_element_style "compact"
+                                                                            :elements
+                                                                            [{:title "This is the First title"
+                                                                              :subtitle "This is a subtitle"
+                                                                              :image_url "http://www.w3schools.com/css/trolltunga.jpg"
+                                                                              :default_action
+                                                                              {:type "web_url"
+                                                                               :url "https://techcrunch.com/2016/11/20/a-love-story/"}
+                                                                              :buttons
+                                                                              [{:type "postback"
+                                                                                :title "Button"
+                                                                                :payload "DEVELOPER_DEFINED_PAYLOAD"}]}
+                                                                             {:title "This is the First title"
+                                                                              :subtitle "This is a subtitle"
+                                                                              :image_url "http://www.w3schools.com/css/trolltunga.jpg"
+                                                                              :default_action
+                                                                              {:type "web_url"
+                                                                               :url "https://techcrunch.com/2016/11/20/a-love-story/"}
+                                                                              :buttons
+                                                                              [{:type "postback"
+                                                                                :title "Button"
+                                                                                :payload "DEVELOPER_DEFINED_PAYLOAD"}]}
+                                                                             {:title "This is the First title"
+                                                                              :subtitle "This is a subtitle"
+                                                                              :image_url "http://www.w3schools.com/css/trolltunga.jpg"
+                                                                              :default_action
+                                                                              {:type "web_url"
+                                                                               :url "https://techcrunch.com/2016/11/20/a-love-story/"}
+                                                                              :buttons
+                                                                              [{:type "postback"
+                                                                                :title "Button"
+                                                                                :payload "DEVELOPER_DEFINED_PAYLOAD"}]}
+                                                                             {:title "This is the First title"
+                                                                              :subtitle "This is a subtitle"
+                                                                              :image_url "http://www.w3schools.com/css/trolltunga.jpg"
+                                                                              :default_action
+                                                                              {:type "web_url"
+                                                                               :url "https://techcrunch.com/2016/11/20/a-love-story/"}
+                                                                              :buttons
+                                                                              [{:type "postback"
+                                                                                :title "Button"
+                                                                                :payload "DEVELOPER_DEFINED_PAYLOAD"}]}]
+                                                                            :buttons
+                                                                            [{:type "postback"
+                                                                              :title "List Button"
+                                                                              :payload "DEVELOPER_DEFINED_PAYLOAD"}]}}}))
+                           :event_fn  :context-question}
    :category-question     {:action_fn (fn [sender-id input]
                                         (post-messenger sender-id {:text "Choose a category bewteen Action and Comedy"}))
                            :event_fn  (fn [input] (if (some #{input} #{"Action" "Comedy"})
