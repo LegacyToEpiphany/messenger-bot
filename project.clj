@@ -10,6 +10,8 @@
                  [luminus-nrepl "0.1.4"]
                  [markdown-clj "0.9.90"]
                  [metosin/ring-http-response "0.8.0"]
+                 [http-kit "2.2.0"]
+                 [org.clojure/core.async "0.2.395"]
                  [mount "0.1.10"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -54,7 +56,7 @@
                                  [ring/ring-devel "1.5.0"]
                                  [pjstadig/humane-test-output "0.8.1"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.14.0"]]
-                  
+
                   :source-paths ["env/dev/clj" "test/clj"]
                   :resource-paths ["env/dev/resources"]
                   :repl-options {:init-ns user}
