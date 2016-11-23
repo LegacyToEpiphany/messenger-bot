@@ -10,18 +10,28 @@
   (alias a n))
 
 ;; ========================== REGISTRY FOR BUTTON =============================
-(ns-as 'messenger.button
-       'button-options.button)
-(s/def ::button-options.button/type #{"postback"})
-(s/def ::button-options.button/title (s/and string? #(<= (count %) 20)))
-(s/def ::button-options.button/payload (s/and string? #(<= (count %) 1000)))
+(s/def :button/type string?)
+(s/def :button/title (s/and string? #(<= (count %) 20)))
+(s/def :button/payload (s/and string? #(<= (count %) 1000)))
 
-;; Postback Button spec
-(s/def ::button-options.button/postback-button
-  (s/keys :req-un
-          [::button-options.button/type
-           ::button-options.button/title
-           ::button-options.button/payload]))
+(def phone-regex #"^[+][1-9]+")
+(s/def ::phone-type (s/and string? #(re-matches phone-regex %)))
+;;regex to implement (internaltional phone number)
+(s/def :test/payload #{"+16505551234"})
+
+(defmulti button-type :button/type)
+(defmethod button-type "postback" [_]
+  (s/keys :req
+          [:button/type
+           :button/title
+           :button/payload]))
+(defmethod button-type "phone_number" [_]
+  (s/keys :req
+          [:button/type
+           :button/title
+           :test/payload]))
+
+(s/def :button/button (s/multi-spec button-type :button/type))
 
 ;; ========================== REGISTRY FOR PAYLOAD TEMPLATE ===================
 (ns-as 'messenger.payload
