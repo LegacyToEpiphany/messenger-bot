@@ -13,7 +13,7 @@
                  [http-kit "2.2.0"]
                  [org.clojure/core.async "0.2.395"]
                  [mount "0.1.10"]
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.webjars.bower/tether "1.3.7"]

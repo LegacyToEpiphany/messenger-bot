@@ -1,6 +1,6 @@
 (ns movie-finder.bots.api
   (:require [org.httpkit.client :as http]
-            [clojure.core.async :refer [chan put! go <!!]]
+            [clojure.core.async :refer [chan put! go <! <!!]]
             [cheshire.core :as cheshire]))
 
 (def apikey "1a36d359b0d2ea513c77951dbe9cf82f")
