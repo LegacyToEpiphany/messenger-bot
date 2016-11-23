@@ -9,35 +9,6 @@
   (create-ns n)
   (alias a n))
 
-;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
-(ns-as 'messenger.attachment
-         'attachment-options.button)
-(s/def ::attachment-options.button/type #{"template"})
-
-(s/def ::attachment-options.button/attachment
-  (s/keys :req-un
-          [::attachment-options.button/type
-           ::payload-options.button/button-template]))
-
-;; ========================== REGISTRY FOR PAYLOAD TEMPLATE ===================
-(ns-as 'messenger.payload
-       'payload-options.button)
-(s/def ::payload-options.button/template_type #{"button"})
-(s/def ::payload-options.button/text (s/and string? #(<= (count %) 320)))          ;;TODO: check encoding set to UTF-8
-(s/def ::payload-options.button/buttons
-  (s/coll-of ::button-options.button/postback-button
-             :kind vector?
-             :min-count 1
-             :max-count 3
-             :distinct true
-             :into []))
-
-(s/def ::payload-options.button/button-template
-  (s/keys :req-un
-          [::payload-options.button/template_type
-           ::payload-options.button/text
-           ::payload-options.button/buttons]))
-
 ;; ========================== REGISTRY FOR BUTTON =============================
 (ns-as 'messenger.button
        'button-options.button)
@@ -52,7 +23,35 @@
            ::button-options.button/title
            ::button-options.button/payload]))
 
-(def generate-postback-button (gen/generate (s/gen ::button-options.button/postback-button)))
-(gen/sample (s/gen ::button-options.button/postback-button) 10)
+;; ========================== REGISTRY FOR PAYLOAD TEMPLATE ===================
+(ns-as 'messenger.payload
+       'payload-options.button)
+(s/def ::payload-options.button/template_type #{"button"})
+(s/def ::payload-options.button/text (s/and string? #(<= (count %) 320)))          ;;TODO: check encoding set to UTF-8
+(s/def ::payload-options.button/buttons
+  (s/coll-of ::button-options.button/postback-button
+             :kind vector?
+             :min-count 1
+             :max-count 3
+             :distinct true
+             :into []))
 
+(s/def ::payload-options.button/button_template
+  (s/keys :req-un
+          [::payload-options.button/template_type
+           ::payload-options.button/text
+           ::payload-options.button/buttons]))
 
+;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
+(ns-as 'messenger.attachment
+         'attachment-options.button)
+(s/def ::attachment-options.button/type #{"template"})
+(s/def ::attachment-options.button/payload ::payload-options.button/button_template)
+
+(s/def ::attachment-options.button/attachment
+  (s/keys :req-un
+          [::attachment-options.button/type
+           ::attachment-options.button/payload]))
+
+(def generate-10-button-attachment (gen/sample (s/gen ::attachment-options.button/attachment)))
+(def generate-button-attachment (gen/generate (s/gen ::attachment-options.button/attachment)))
