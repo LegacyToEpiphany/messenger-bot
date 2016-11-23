@@ -54,7 +54,8 @@
    :project/dev  {:dependencies [[prone "1.1.2"]
                                  [ring/ring-mock "0.3.0"]
                                  [ring/ring-devel "1.5.0"]
-                                 [pjstadig/humane-test-output "0.8.1"]]
+                                 [pjstadig/humane-test-output "0.8.1"]
+                                 [org.clojure/test.check "0.9.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.14.0"]]
 
                   :source-paths ["env/dev/clj" "test/clj"]

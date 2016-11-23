@@ -8,7 +8,8 @@
             [automat.viz :refer [view]]
             [movie-finder.bots.api :as api]
             [movie-finder.bots.core :as bots]
-            [clojure.core.async :refer [<!!] :as async]))
+            [clojure.core.async :refer [<!!] :as async]
+            [movie-finder.bots.spec :as spec]))
 
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
@@ -125,6 +126,34 @@
                            :event_fn  (fn [input] :context-question)}})
 
 ;; ========================== Webhook Router/Handler ==========================
+;(comment (defn webhook-router
+;           "Routes webhook messages to it's processing function based on webhook type.
+;           Note the Multiple responses are possible for each webhook type based on payload
+;           or text/attachment... content."
+;           [entries]
+;           (dorun
+;             (map (fn [{messaging :messaging}]
+;                    (dorun
+;                      (map (fn [message]
+;                             (let [sender-id (keyword (str (get-in entry [:sender :id])))
+;                                   input (get-in message [:message :text])]
+;                               (if-not (get @fsm sender-id)
+;                                 (swap! fsm update-in [sender-id] adv {:messenger-state :context-question}))
+;                               (loop [current-state (:messenger-state (peek (:messenger-pages (:value (get @fsm sender-id)))))
+;                                      next-state ((get-in fsm-fn [current-state :event_fn]) input)
+;                                      next-action-fn (get-in fsm-fn [next-state :action_fn])]
+;                                 (try
+;                                   (swap! fsm update-in [sender-id] adv {:messenger-state next-state})
+;                                   (next-action-fn sender-id input)
+;                                   (catch Exception e (str "caught exception: " (.getMessage e))))
+;                                 (let [next-next-state (get-in fsm-fn [next-state :event_fn])]
+;                                   (if (keyword? next-next-state)
+;                                     (recur next-state
+;                                            next-next-state
+;                                            (get-in fsm-fn [next-next-state :action_fn]))))))) messaging)))
+;                  entries))
+;           (response/ok)))
+
 (defn webhook-router
   "Routes webhook messages to it's processing function based on webhook type.
   Note the Multiple responses are possible for each webhook type based on payload
@@ -136,20 +165,9 @@
              (map (fn [message]
                     (let [sender-id (keyword (str (get-in entry [:sender :id])))
                           input (get-in message [:message :text])]
-                      (if-not (get @fsm sender-id)
-                        (swap! fsm update-in [sender-id] adv {:messenger-state :context-question}))
-                      (loop [current-state (:messenger-state (peek (:messenger-pages (:value (get @fsm sender-id)))))
-                             next-state ((get-in fsm-fn [current-state :event_fn]) input)
-                             next-action-fn (get-in fsm-fn [next-state :action_fn])]
-                        (try
-                          (swap! fsm update-in [sender-id] adv {:messenger-state next-state})
-                          (next-action-fn sender-id input)
-                          (catch Exception e (str "caught exception: " (.getMessage e))))
-                        (let [next-next-state (get-in fsm-fn [next-state :event_fn])]
-                          (if (keyword? next-next-state)
-                            (recur next-state
-                                   next-next-state
-                                   (get-in fsm-fn [next-next-state :action_fn]))))))) messaging)))
+                      (println sender-id)
+                      (post-messenger sender-id :message {:attachment spec/generate-postback-button})))
+                  messaging)))
          entries))
   (response/ok))
 

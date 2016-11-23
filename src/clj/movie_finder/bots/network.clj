@@ -10,10 +10,10 @@
 
 (defn post-messenger
   "Helper function that post a message to a given user"
-  [user-id message]
+  [user-id key map]
   (client/post (str facebook-graph-url message-uri "?access_token=" (:page-access-token env))
                {:body           (let [body (generate-string {:recipient {:id user-id}
-                                                             :message   message})]
+                                                             key map})]
                                   body)
                 :content-type   :json
                 :socket-timeout 10000
