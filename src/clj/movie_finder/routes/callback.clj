@@ -166,8 +166,9 @@
                     (let [sender-id (keyword (str (get-in entry [:sender :id])))
                           input (get-in message [:message :text])]
                       (println sender-id)
-                      ;(post-messenger sender-id :message {:attachment spec/generate-button-attachment})
-                      ))
+                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})
+                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})
+                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})))
                   messaging)))
          entries))
   (response/ok))
