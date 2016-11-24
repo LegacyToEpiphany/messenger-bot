@@ -10,58 +10,49 @@
   (alias a n))
 
 ;; ========================== REGISTRY FOR BUTTON =============================
+(def phone-regex #"^[+][1-9]+")
+(s/def ::phone-type (s/and string? #(re-matches phone-regex %)))
+;TODO: implement the
+(s/def :call-button/payload #{"+16505551234"})
+
+
 (s/def :button/type string?)
 (s/def :button/title (s/and string? #(<= (count %) 20)))
 (s/def :button/payload (s/and string? #(<= (count %) 1000)))
 
-(def phone-regex #"^[+][1-9]+")
-(s/def ::phone-type (s/and string? #(re-matches phone-regex %)))
-;;regex to implement (internaltional phone number)
-(s/def :test/payload #{"+16505551234"})
-
-(defmulti button-type :button/type)
+(defmulti button-type :type)
 (defmethod button-type "postback" [_]
-  (s/keys :req
-          [:button/type
-           :button/title
-           :button/payload]))
+  (s/keys :req-un [:button/title :button/type :button/payload]))
 (defmethod button-type "phone_number" [_]
-  (s/keys :req
-          [:button/type
-           :button/title
-           :test/payload]))
-
-(s/def :button/button (s/multi-spec button-type :button/type))
+  (s/keys :req-un [:button/title :button/type :call-button/payload]))
+(s/def :button/button (s/multi-spec button-type :type))
+(gen/sample (s/gen :button/button))
 
 ;; ========================== REGISTRY FOR PAYLOAD TEMPLATE ===================
-(ns-as 'messenger.payload
-       'payload-options.button)
-(s/def ::payload-options.button/template_type #{"button"})
-(s/def ::payload-options.button/text (s/and string? #(<= (count %) 320)))          ;;TODO: check encoding set to UTF-8
-(s/def ::payload-options.button/buttons
-  (s/coll-of ::button-options.button/postback-button
+(s/def :payload/template_type #{"button"})
+(s/def :payload/text (s/and string? #(<= (count %) 320)))          ;;TODO: check encoding set to UTF-8
+(s/def :payload/buttons
+  (s/coll-of :button/button
              :kind vector?
              :min-count 1
              :max-count 3
              :distinct true
              :into []))
 
-(s/def ::payload-options.button/button_template
+(s/def :payload/button_template
   (s/keys :req-un
-          [::payload-options.button/template_type
-           ::payload-options.button/text
-           ::payload-options.button/buttons]))
+          [:payload/template_type
+           :payload/text
+           :payload/buttons]))
 
 ;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
-(ns-as 'messenger.attachment
-         'attachment-options.button)
-(s/def ::attachment-options.button/type #{"template"})
-(s/def ::attachment-options.button/payload ::payload-options.button/button_template)
+(s/def :attachment/type #{"template"})
+(s/def :attachment/payload :payload/button_template)
 
-(s/def ::attachment-options.button/attachment
+(s/def :attachment/attachment
   (s/keys :req-un
-          [::attachment-options.button/type
-           ::attachment-options.button/payload]))
+          [:attachment/type
+           :attachment/payload]))
 
-(def generate-10-button-attachment (gen/sample (s/gen ::attachment-options.button/attachment)))
-(def generate-button-attachment (gen/generate (s/gen ::attachment-options.button/attachment)))
+(def generate-10-button-attachment (gen/sample (s/gen :attachment/attachment)))
+(def generate-button-attachment (gen/generate (s/gen :attachment/attachment)))
