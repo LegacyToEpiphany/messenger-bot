@@ -58,7 +58,7 @@
         {:template_type "button"
          :text          text
          :buttons       (vec buttons)}
-        parsed (s/explain-data :button-template/button_template button-template)]
+        parsed (s/conform :button-template/button_template button-template)]
     (if (= parsed ::s/invalid)
       (throw (ex-info "Invalid input" (s/explain-data :button-template/button_template button-template)))
       button-template)))
@@ -68,6 +68,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;; Generic Template ;;;;;;;;;;;;;;;;;;;
 ;;See:
 ;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
+
+(defn make-generic-template [& elements]
+  (let [generic-template
+        {:template_type "generic"
+         :elements       (vec elements)}
+        parsed (s/conform :generic-template/generic_template generic-template)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :generic-template/generic_template generic-template)))
+      generic-template)))
+
+(defn make-element-object [{:keys [title item_url default_action image_url subtitle buttons]}]
+  (let [element-object
+        {:title          title
+         :item_url       item_url
+         :default_action default_action
+         :image_url      image_url
+         :subtitle       subtitle
+         :buttons        buttons}
+        filtered-element-object (into {} (remove #(nil? (val %)) element-object))
+        parsed (s/conform :element/element filtered-element-object)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :button-template/button_template filtered-element-object)))
+      filtered-element-object)))
+
 
 {:template_type "generic"
  :elements [{:title     "A title"

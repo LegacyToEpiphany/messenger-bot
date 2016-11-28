@@ -203,24 +203,57 @@
                         ;                                                                                         (send-api/make-call-button {:title   "Ici le Call Center"
                         ;                                                                                                                     :payload "+33630867395"}))}})
 
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                        ;                                                                                         (send-api/make-url-button
+                        ;                                                                                           {:url                  "http://google.fr"
+                        ;                                                                                            :title                "Navigateur compact"
+                        ;                                                                                            :webview_height_ratio "compact"}))}})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                        ;                                                                                         (send-api/make-url-button
+                        ;                                                                                           {:url                  "http://google.fr"
+                        ;                                                                                            :title                "Navigateur grand"
+                        ;                                                                                            :webview_height_ratio "tall"}))}})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                        ;                                                                                         (send-api/make-url-button
+                        ;                                                                                           {:url                  "http://google.fr"
+                        ;                                                                                            :title                "Navigateur full"
+                        ;                                                                                            :webview_height_ratio "full"}))}})
+
                         (post-messenger sender-id :message {:attachment {:type    "template"
-                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
-                                                                                                                 (send-api/make-url-button
-                                                                                                                   {:url                  "http://google.fr"
-                                                                                                                    :title                "Navigateur compact"
-                                                                                                                    :webview_height_ratio "compact"}))}})
-                        (post-messenger sender-id :message {:attachment {:type    "template"
-                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
-                                                                                                                 (send-api/make-url-button
-                                                                                                                   {:url                  "http://google.fr"
-                                                                                                                    :title                "Navigateur grand"
-                                                                                                                    :webview_height_ratio "tall"}))}})
-                        (post-messenger sender-id :message {:attachment {:type    "template"
-                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
-                                                                                                                 (send-api/make-url-button
-                                                                                                                   {:url                  "http://google.fr"
-                                                                                                                    :title                "Navigateur full"
-                                                                                                                    :webview_height_ratio "full"}))}})
+                                                                         :payload (send-api/make-generic-template
+                                                                                    (send-api/make-element-object
+                                                                                      {:title "Titre 1"
+                                                                                       :subtitle "Subtitle"
+                                                                                       :buttons [(send-api/make-postback-button
+                                                                                                   {:title "Titre du boutton"
+                                                                                                    :payload "payload"})
+                                                                                                 (send-api/make-postback-button
+                                                                                                   {:title "Titre du boutton 2"
+                                                                                                    :payload "payload"})
+                                                                                                 (send-api/make-postback-button
+                                                                                                   {:title "Titre du boutton 3"
+                                                                                                    :payload "payload"})]})
+                                                                                    (send-api/make-element-object {:title    "Titre 2"
+                                                                                                                   :subtitle "Sous-titre 2"})
+                                                                                    (send-api/make-element-object {:title    "Titre 3"
+                                                                                                                   :subtitle "Sous-titre 3"})
+                                                                                    (send-api/make-element-object {:title    "Titre 4"
+                                                                                                                   :subtitle "Sous-titre 4"})
+                                                                                    (send-api/make-element-object {:title    "Titre 5"
+                                                                                                                   :subtitle "Sous-titre 5"})
+                                                                                    (send-api/make-element-object {:title    "Titre 6"
+                                                                                                                   :subtitle "Sous-titre 6"})
+                                                                                    (send-api/make-element-object {:title    "Titre 7"
+                                                                                                                   :subtitle "Sous-titre 7"})
+                                                                                    (send-api/make-element-object {:title    "Titre 8"
+                                                                                                                   :subtitle "Sous-titre 8"})
+                                                                                    (send-api/make-element-object {:title    "Titre 9"
+                                                                                                                   :subtitle "Sous titre 9"})
+                                                                                    (send-api/make-element-object {:title    "Titre 10"
+                                                                                                                   :subtitle "Sous-titre 10"}))}})
 
                         )))
                   messaging)))

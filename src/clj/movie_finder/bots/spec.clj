@@ -48,6 +48,8 @@
 ;; ========================== ELEMENT OBJECT =================================
 
 ;TODO: spec the fact that one element cannot have both default_action and item_url
+;TODO: Spec this error : incomplete element
+; title and at least one other field (image url, subtitle or buttons) is required
 (s/def :element/title (s/and string? #(<= (count %) 80)))
 (s/def :element/item_url ::url)
 (s/def :element/image_url ::url)
@@ -58,7 +60,7 @@
                                    :distinct true
                                    :into []))
 
-;TODO: Spec that :button/type should only be a web_url type
+;TODO: Spec that :button/type should only be a web_url type in a default_action
 (s/def :element/default_action
   (s/keys :req-un [:button/type :button/url]
           :opt-un [:button/webview_height_ratio
