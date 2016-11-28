@@ -48,6 +48,7 @@
 
 ;; ========================== ELEMENT OBJECT =================================
 
+;TODO: spec the fact that one element cannot have both default_action and item_url
 (s/def :element/title (s/and string? #(<= (count %) 80)))
 (s/def :element/item_url ::url)
 (s/def :element/image_url ::url)
@@ -67,7 +68,7 @@
 
 ;; ========================== PAYLOAD BUTTON TEMPLATE =========================
 (s/def :button-template/template_type #{"button"})
-;;TODO: specify that encoding is set to UTF-8
+;TODO: specify that encoding is set to UTF-8
 (s/def :button-template/text (s/and string? #(<= (count %) 320)))
 (s/def :button-template/buttons
   (s/coll-of :button/button
