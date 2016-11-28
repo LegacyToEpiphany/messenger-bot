@@ -5,11 +5,12 @@
             [movie-finder.bots.network :refer [post-messenger]]
             [clojure.set :refer [difference]]
             [automat.core :as a]
-            [automat.viz :refer [view]]
+    ;[automat.viz :refer [view]]
             [movie-finder.bots.api :as api]
             [movie-finder.bots.core :as bots]
             [clojure.core.async :refer [<!!] :as async]
-            [movie-finder.bots.spec :as spec]))
+            [movie-finder.bots.spec :as spec]
+            [movie-finder.bots.send-api :as send-api]))
 
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
@@ -165,10 +166,63 @@
              (map (fn [message]
                     (let [sender-id (keyword (str (get-in entry [:sender :id])))
                           input (get-in message [:message :text])]
-                      (println sender-id)
-                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})
-                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})
-                      (post-messenger sender-id :message {:attachment (spec/generate-button-attachment)})))
+                      (when (= input "start1")
+                        ;(post-messenger sender-id :message {:text "BUTTON TEMPLATE"})
+                        ;(post-messenger sender-id :message {:text "7 types de boutons différents: postback/url/call/share/log-in/log-out/buy"})
+                        ;(post-messenger sender-id :message {:text "Chaque \"button template\" peut contenir 3 boutons maximum."})
+                        ;(post-messenger sender-id :message {:text "================================="})
+                        ;(post-messenger sender-id :message {:text "BUTTON TEMPLATE - POSTBACK BUTTON"})
+                        ;(post-messenger sender-id :message {:text "================================="})
+                        ;(post-messenger sender-id :message {:text "Les boutons de type \"postback\" ont un titre limité à 20 caractères."})
+                        ;(post-messenger sender-id :message {:text "Ils contiennent un champ caché pour l'utilisateur renvoyé au serveur."})
+                        ;(post-messenger sender-id :message {:text "Celui-ci peut servir à identifier la prochaine action ou à contenir de la data."})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Texte pré-bouton 1"
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton"
+                        ;                                                                                                                         :payload "payload"}))}})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Texte pré-bouton 2"
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton 1"
+                        ;                                                                                                                         :payload "payload"})
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton 2"
+                        ;                                                                                                                         :payload "payload"}))}})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Texte pré-bouton 3"
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton 1"
+                        ;                                                                                                                         :payload "payload"})
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton 2"
+                        ;                                                                                                                         :payload "payload"})
+                        ;                                                                                         (send-api/make-postback-button {:title   "Titre du bouton 3"
+                        ;                                                                                                                         :payload "payload"}))}})
+                        ;(post-messenger sender-id :message {:text "================================="})
+                        ;(post-messenger sender-id :message {:text "BUTTON TEMPLATE - CALL BUTTON"})
+                        ;(post-messenger sender-id :message {:text "================================="})
+                        ;(post-messenger sender-id :message {:text "Le bouton de type \"call\" permet d'appeler directement un numéro prédéfini"})
+                        ;(post-messenger sender-id :message {:attachment {:type    "template"
+                        ;                                                 :payload (send-api/make-button-template "Appellez notre super call-center"
+                        ;                                                                                         (send-api/make-call-button {:title   "Ici le Call Center"
+                        ;                                                                                                                     :payload "+33630867395"}))}})
+
+                        (post-messenger sender-id :message {:attachment {:type    "template"
+                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                                                                                                                 (send-api/make-url-button
+                                                                                                                   {:url                  "http://google.fr"
+                                                                                                                    :title                "Navigateur compact"
+                                                                                                                    :webview_height_ratio "compact"}))}})
+                        (post-messenger sender-id :message {:attachment {:type    "template"
+                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                                                                                                                 (send-api/make-url-button
+                                                                                                                   {:url                  "http://google.fr"
+                                                                                                                    :title                "Navigateur grand"
+                                                                                                                    :webview_height_ratio "tall"}))}})
+                        (post-messenger sender-id :message {:attachment {:type    "template"
+                                                                         :payload (send-api/make-button-template "Voici un bouton de type url - sans l'extension messenger"
+                                                                                                                 (send-api/make-url-button
+                                                                                                                   {:url                  "http://google.fr"
+                                                                                                                    :title                "Navigateur full"
+                                                                                                                    :webview_height_ratio "full"}))}})
+
+                        )))
                   messaging)))
          entries))
   (response/ok))

@@ -6,7 +6,7 @@
 (def phone-regex #"^[+][1-9]+")
 (s/def ::phone-type (s/and string? #(re-matches phone-regex %)))
 ;TODO: implement the right regex for international phone numbers
-(s/def :call-button/payload #{"+16505551234"})
+(s/def :call-button/payload #{"+33630867395"})
 
 ;TODO: implement the right regex for urls
 (s/def ::url string?)
