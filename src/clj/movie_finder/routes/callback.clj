@@ -225,35 +225,62 @@
                         (post-messenger sender-id :message {:attachment {:type    "template"
                                                                          :payload (send-api/make-generic-template
                                                                                     (send-api/make-element-object
-                                                                                      {:title "Titre 1"
+                                                                                      {:title    "Titre 1"
                                                                                        :subtitle "Subtitle"
-                                                                                       :buttons [(send-api/make-postback-button
-                                                                                                   {:title "Titre du boutton"
-                                                                                                    :payload "payload"})
-                                                                                                 (send-api/make-postback-button
-                                                                                                   {:title "Titre du boutton 2"
-                                                                                                    :payload "payload"})
-                                                                                                 (send-api/make-postback-button
-                                                                                                   {:title "Titre du boutton 3"
-                                                                                                    :payload "payload"})]})
-                                                                                    (send-api/make-element-object {:title    "Titre 2"
-                                                                                                                   :subtitle "Sous-titre 2"})
-                                                                                    (send-api/make-element-object {:title    "Titre 3"
-                                                                                                                   :subtitle "Sous-titre 3"})
-                                                                                    (send-api/make-element-object {:title    "Titre 4"
-                                                                                                                   :subtitle "Sous-titre 4"})
-                                                                                    (send-api/make-element-object {:title    "Titre 5"
-                                                                                                                   :subtitle "Sous-titre 5"})
-                                                                                    (send-api/make-element-object {:title    "Titre 6"
-                                                                                                                   :subtitle "Sous-titre 6"})
-                                                                                    (send-api/make-element-object {:title    "Titre 7"
-                                                                                                                   :subtitle "Sous-titre 7"})
-                                                                                    (send-api/make-element-object {:title    "Titre 8"
-                                                                                                                   :subtitle "Sous-titre 8"})
-                                                                                    (send-api/make-element-object {:title    "Titre 9"
-                                                                                                                   :subtitle "Sous titre 9"})
-                                                                                    (send-api/make-element-object {:title    "Titre 10"
-                                                                                                                   :subtitle "Sous-titre 10"}))}})
+                                                                                       :buttons  [(send-api/make-postback-button
+                                                                                                    {:title   "Titre du boutton"
+                                                                                                     :payload "payload"})
+                                                                                                  (send-api/make-postback-button
+                                                                                                    {:title   "Titre du boutton 2"
+                                                                                                     :payload "payload"})
+                                                                                                  (send-api/make-postback-button
+                                                                                                    {:title   "Titre du boutton 3"
+                                                                                                     :payload "payload"})]})
+
+                                                                                    (send-api/make-element-object
+                                                                                      {:title     "Titre 2"
+                                                                                       :subtitle  "Sous titre 2"
+                                                                                       :image_url "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title     "La photo redirige vers google.com"
+                                                                                       :subtitle  "Le sous-titre permet d'expliquer également"
+                                                                                       :image_url "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"
+                                                                                       :item_url  "http://google.com"})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title     "La photo redirige vers google.com"
+                                                                                       :subtitle  "Le sous-titre permet d'expliquer également"
+                                                                                       :image_url "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"
+                                                                                       :item_url  "http://google.com"
+                                                                                       :buttons   [(send-api/make-postback-button
+                                                                                                     {:title   "Valider ?"
+                                                                                                      :payload "useless"})]})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title     "Element avec un button ouvrant une page internet"
+                                                                                       :subtitle  "Le sous-titre permet d'expliquer également"
+                                                                                       :image_url "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"
+                                                                                       :item_url  "http://google.com"
+                                                                                       :buttons   [(send-api/make-url-button
+                                                                                                     {:url "http://google.com"
+                                                                                                      :title "Aller sur google"
+                                                                                                      :webview_height_ratio "compact"})]})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title    "Element sans call-to-action"
+                                                                                       :subtitle "Sous-titre innutile"})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title     "Appeler notre super hotline sans efforts"
+                                                                                       :subtitle  "C'est super bien :-)!"
+                                                                                       :image_url "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"
+                                                                                       :buttons   [(send-api/make-call-button
+                                                                                                     {:title   "Make a phone call"
+                                                                                                      :payload "+33630867395"})]})
+                                                                                    (send-api/make-element-object
+                                                                                      {:title          "On peut même intégrer une page web (avec/sans extensions)"
+                                                                                       :subtitle       "Waouhhhh"
+                                                                                       :image_url      "https://placeholdit.imgix.net/~text?txtsize=33&txt=350×150&w=191&h=100"
+                                                                                       :default-action {:type                 "web_url"
+                                                                                                        :url                  "http://google.com"
+                                                                                                        :webview_height_ratio "compact"
+                                                                                                        :fallback_url         "http://google.com"}}))}})
 
                         )))
                   messaging)))

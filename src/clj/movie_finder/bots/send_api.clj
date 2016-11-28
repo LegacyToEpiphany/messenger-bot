@@ -9,6 +9,7 @@
 ;; TODO Make buy button
 ;; TODO Make Log-in button
 ;; TODO Make Log-out button
+;; TODO Make Default button work
 
 ;;;;;;;;;;;;;;;;;;;;;;; Buttons ;;;;;;;;;;;;;;;;;;;
 ;;See:

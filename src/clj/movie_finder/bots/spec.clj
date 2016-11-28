@@ -57,7 +57,6 @@
 (s/def :element/buttons (s/coll-of :button/button
                                    :kind vector?
                                    :max-count 3
-                                   :distinct true
                                    :into []))
 
 ;TODO: Spec that :button/type should only be a web_url type in a default_action
@@ -84,7 +83,6 @@
              :kind vector?
              :min-count 1
              :max-count 3
-             :distinct true
              :into []))
 
 (s/def :button-template/button_template
@@ -100,7 +98,6 @@
              :kind vector?
              :min-count 1
              :max-count 10
-             :distinct true
              :into []))
 
 (s/def :generic-template/generic_template
