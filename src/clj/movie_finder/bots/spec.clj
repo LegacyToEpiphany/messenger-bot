@@ -54,10 +54,14 @@
 (s/def :element/item_url ::url)
 (s/def :element/image_url ::url)
 (s/def :element/subtitle (s/and string? #(<= (count %) 80)))
-(s/def :element/buttons (s/coll-of :button/button
+(s/def :generic-template/buttons (s/coll-of :button/button
                                    :kind vector?
                                    :max-count 3
                                    :into []))
+(s/def :list-template/buttons (s/coll-of :button/button
+                                            :kind vector?
+                                            :max-count 1
+                                            :into []))
 
 ;TODO: Spec that :button/type should only be a web_url type in a default_action
 (s/def :element/default_action
@@ -66,13 +70,21 @@
                    :button/messenger_extensions
                    :button/fallback_url]))
 
-(s/def :element/element
+(s/def :generic-template/element
         (s/keys :req-un [:element/title]
                 :opt-un [:element/item_url
                          :element/image_url
                          :element/subtitle
-                         :element/buttons
+                         :generic-template/buttons
                          :element/default_action]))
+
+(s/def :list-template/element
+  (s/keys :req-un [:element/title]
+          :opt-un [:element/item_url
+                   :element/image_url
+                   :element/subtitle
+                   :list-template/buttons
+                   :element/default_action]))
 
 ;; ========================== PAYLOAD BUTTON TEMPLATE =========================
 (s/def :button-template/template_type #{"button"})
@@ -94,7 +106,7 @@
 ;; ========================== PAYLOAD GENERIC TEMPLATE ========================
 (s/def :generic-template/template_type #{"generic"})
 (s/def :generic-template/elements
-  (s/coll-of :element/element
+  (s/coll-of :generic-template/element
              :kind vector?
              :min-count 1
              :max-count 10
@@ -104,6 +116,30 @@
   (s/keys :req-un
           [:generic-template/template_type
            :generic-template/elements]))
+
+;; ========================== PAYLOAD LIST TEMPLATE ========================
+(s/def :list-template/template_type #{"list"})
+(s/def :list-template/top_element_style #{"large" "compact"})
+(s/def :list-template/elements
+  (s/coll-of :list-template/element
+             :kind vector?
+             :min-count 2
+             :max-count 4
+             :into []))
+(s/def :list-template/buttons
+  (s/coll-of :button/button
+             :kind vector?
+             :min-count 1
+             :max-count 1
+             :into []))
+
+(s/def :list-template/list-template
+  (s/keys :req-un
+          [:list-template/template_type
+           :list-template/elements]
+          :opt-un
+          [:list-template/top_element_style
+           :list-template/buttons]))
 
 ;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
 (s/def :attachment/type #{"template"})

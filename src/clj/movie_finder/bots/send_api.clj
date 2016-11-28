@@ -10,6 +10,7 @@
 ;; TODO Make Log-in button
 ;; TODO Make Log-out button
 ;; TODO Make Default button work
+;; TODO Make Default_action object
 
 ;;;;;;;;;;;;;;;;;;;;;;; Buttons ;;;;;;;;;;;;;;;;;;;
 ;;See:
@@ -79,7 +80,7 @@
       (throw (ex-info "Invalid input" (s/explain-data :generic-template/generic_template generic-template)))
       generic-template)))
 
-(defn make-element-object [{:keys [title item_url default_action image_url subtitle buttons]}]
+(defn make-element-generic-object [{:keys [title item_url default_action image_url subtitle buttons]}]
   (let [element-object
         {:title          title
          :item_url       item_url
@@ -88,17 +89,39 @@
          :subtitle       subtitle
          :buttons        buttons}
         filtered-element-object (into {} (remove #(nil? (val %)) element-object))
-        parsed (s/conform :element/element filtered-element-object)]
+        parsed (s/conform :generic-template/element filtered-element-object)]
     (if (= parsed ::s/invalid)
-      (throw (ex-info "Invalid input" (s/explain-data :button-template/button_template filtered-element-object)))
+      (throw (ex-info "Invalid input" (s/explain-data :generic-template/element filtered-element-object)))
       filtered-element-object)))
 
 
-{:template_type "generic"
- :elements [{:title     "A title"
-             :item_url  "http://google.com"
-             :image_url "http://image.url"
-             :subtitle  "This is a subtitle"
-             :buttons [{:type "postback"
-                        :tittle "Start Chatting"
-                        :payload "DeveloperPayload"}]}]}
+
+;;;;;;;;;;;;;;;;;;;;;;; List Template ;;;;;;;;;;;;;;;;;;;
+;;See:
+;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/list-template
+
+(defn make-list-template [{:keys [top_element_style elements buttons]}]
+  (let [list-template
+        {:template_type "list"
+         :top_element_style top_element_style
+         :elements elements
+         :buttons buttons}
+        filtered-element-object (into {} (remove #(nil? (val %)) list-template))
+        parsed (s/conform :list-template/list-template filtered-element-object)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :list-template/list-template filtered-element-object)))
+      filtered-element-object)))
+
+(defn make-element-list-object [{:keys [title item_url default_action image_url subtitle buttons]}]
+  (let [element-object
+        {:title          title
+         :item_url       item_url
+         :default_action default_action
+         :image_url      image_url
+         :subtitle       subtitle
+         :buttons        buttons}
+        filtered-element-object (into {} (remove #(nil? (val %)) element-object))
+        parsed (s/conform :list-template/element filtered-element-object)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :list-template/element filtered-element-object)))
+      filtered-element-object)))
