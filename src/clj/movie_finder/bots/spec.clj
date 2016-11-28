@@ -44,7 +44,6 @@
 ;  (s/keys :req-un [:button/type]))
 
 (s/def :button/button (s/multi-spec button-type :type))
-(gen/sample (s/gen :button/button))
 
 ;; ========================== ELEMENT OBJECT =================================
 
@@ -59,12 +58,20 @@
                                    :distinct true
                                    :into []))
 
+;TODO: Spec that :button/type should only be a web_url type
+(s/def :element/default_action
+  (s/keys :req-un [:button/type :button/url]
+          :opt-un [:button/webview_height_ratio
+                   :button/messenger_extensions
+                   :button/fallback_url]))
+
 (s/def :element/element
         (s/keys :req-un [:element/title]
                 :opt-un [:element/item_url
                          :element/image_url
                          :element/subtitle
-                         :element/buttons]))
+                         :element/buttons
+                         :element/default_action]))
 
 ;; ========================== PAYLOAD BUTTON TEMPLATE =========================
 (s/def :button-template/template_type #{"button"})
@@ -86,6 +93,18 @@
 
 ;; ========================== PAYLOAD GENERIC TEMPLATE ========================
 (s/def :generic-template/template_type #{"generic"})
+(s/def :generic-template/elements
+  (s/coll-of :element/element
+             :kind vector?
+             :min-count 1
+             :max-count 10
+             :distinct true
+             :into []))
+
+(s/def :generic-template/generic_template
+  (s/keys :req-un
+          [:generic-template/template_type
+           :generic-template/elements]))
 
 ;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
 (s/def :attachment/type #{"template"})
@@ -95,7 +114,3 @@
   (s/keys :req-un
           [:attachment/type
            :attachment/payload]))
-
-(def generate-10-button-attachment (gen/sample (s/gen :attachment/attachment)))
-(defn generate-button-attachment []
-  (gen/generate (s/gen :attachment/attachment)))

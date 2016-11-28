@@ -68,3 +68,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;; Generic Template ;;;;;;;;;;;;;;;;;;;
 ;;See:
 ;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
+
+{:template_type "generic"
+ :elements [{:title     "A title"
+             :item_url  "http://google.com"
+             :image_url "http://image.url"
+             :subtitle  "This is a subtitle"
+             :buttons [{:type "postback"
+                        :tittle "Start Chatting"
+                        :payload "DeveloperPayload"}]}]}
