@@ -2,31 +2,13 @@
   (:require [movie-finder.bots.spec :as spec]
             [clojure.spec :as s]))
 
-;; Pour chaque button
-;; Faire une function pour créer le button
-;; Validation
-;; Specing functions
-;; Les tester dans le showcase
-
-;; TODO Share button for generic template
 ;; TODO Spec functions
 ;; TODO Integrate Messenger Extension
+;; TODO Make Share button for generic template
 ;; TODO Make the URL Button with URL Extension a true standard
-
-
-;;;;;;;;;;;;;;;;;;;;;;; Button Template ;;;;;;;;;;;;;;;;;;;
-;;See:
-;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/button-template
-
-(defn make-button-template [text & buttons]
-  (let [button-template
-        {:template_type "button"
-         :text          text
-         :buttons       (vec buttons)}
-        parsed (s/explain-data :button-template/button_template button-template)]
-    (if (= parsed ::s/invalid)
-      (throw (ex-info "Invalid input" (s/explain-data :button-template/button_template button-template)))
-      button-template)))
+;; TODO Make buy button
+;; TODO Make Log-in button
+;; TODO Make Log-out button
 
 ;;;;;;;;;;;;;;;;;;;;;;; Buttons ;;;;;;;;;;;;;;;;;;;
 ;;See:
@@ -64,3 +46,25 @@
 (defn make-buy-button [] ,,)
 (defn make-log-in-button [] ,,)
 (defn make-log-out-button [] ,,)
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;; Button Template ;;;;;;;;;;;;;;;;;;;
+;;See:
+;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/button-template
+
+(defn make-button-template [text & buttons]
+  (let [button-template
+        {:template_type "button"
+         :text          text
+         :buttons       (vec buttons)}
+        parsed (s/explain-data :button-template/button_template button-template)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :button-template/button_template button-template)))
+      button-template)))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;; Generic Template ;;;;;;;;;;;;;;;;;;;
+;;See:
+;; https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
