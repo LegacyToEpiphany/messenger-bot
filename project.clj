@@ -4,6 +4,7 @@
   :url "http://example.com/FIXME"
 
   :dependencies [[bouncer "1.0.0"]
+                 [org.clojure/core.async "0.2.395"]
                  [compojure "1.5.1"]
                  [cprop "0.1.9"]
                  [luminus-immutant "0.2.2"]
