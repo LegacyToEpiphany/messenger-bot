@@ -44,7 +44,12 @@
       (throw (ex-info "Invalid input" (s/explain-data :button/button button)))
       button)))
 
-(defn make-share-button [] ,,)
+(defn make-share-button []
+  (let [button {:type    "element_share"}
+        parsed (s/conform :button/button button)]
+    (if (= parsed ::s/invalid)
+      (throw (ex-info "Invalid input" (s/explain-data :button/button button)))
+      button)))
 (defn make-buy-button [] ,,)
 (defn make-log-in-button [] ,,)
 (defn make-log-out-button [] ,,)

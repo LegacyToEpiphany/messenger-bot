@@ -37,6 +37,9 @@
                    :button/messenger_extensions
                    :button/fallback_url]))
 
+(defmethod button-type "element_share" [_]
+  (s/keys :req-un [:button/type]))
+
 ;TODO: Add buy button and log-in/log-out button
 ;TODO: the share button only work with the generic template, not specified here.
 ;;NOTE: https://developers.facebook.com/docs/messenger-platform/send-api-reference/share-button

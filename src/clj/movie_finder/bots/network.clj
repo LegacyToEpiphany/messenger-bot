@@ -19,3 +19,14 @@
                 :socket-timeout 10000
                 :conn-timeout   10000
                 :accept         :json}))
+
+(defn typing-on
+  [user-id]
+  (client/post (str facebook-graph-url message-uri "?access_token=" (:page-access-token env))
+               {:body           (let [body (generate-string {:recipient {:id user-id}
+                                                             :sender_action "typing_on"})]
+                                  body)
+                :content-type   :json
+                :socket-timeout 10000
+                :conn-timeout   10000
+                :accept         :json}))
