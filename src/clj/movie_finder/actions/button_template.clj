@@ -59,7 +59,10 @@
                                                                    :item_url "http://www.dayonepartners.com/fr/"
                                                                    :image_url "http://www.dayonepartners.com/fr/wp-content/uploads/sites/3/2016/11/logo-2.png"
                                                                    :subtitle "C'est une grande nouvelle ! :-)"
-                                                                   :buttons [(send-api/make-share-button)]}))}})))
+                                                                   :buttons [(send-api/make-share-button)
+                                                                             (send-api/make-postback-button
+                                                                               {:title   "Continuer"
+                                                                                :payload "main-context"})]}))}})))
 
 (def button-template-route
   (routes (messenger-route :button-template-start
@@ -71,4 +74,8 @@
                            (fn [entry]
                              (if (= "share-button" (get-in entry [:postback :payload]))
                                :button-template-share)) button-call-action)
-          (messenger-route :button-template-share (fn [entry] :end) button-share-action)))
+          (messenger-route :button-template-share
+                           (fn [entry]
+                             (if (= "main-context" (get-in entry [:postback :payload]))
+                               :routing))
+                           button-share-action)))

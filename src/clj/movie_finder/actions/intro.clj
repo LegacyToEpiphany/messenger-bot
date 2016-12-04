@@ -27,7 +27,30 @@
                                                                    :subtitle "Ils permettent de présenter l'information."
                                                                    :buttons  [(send-api/make-postback-button
                                                                                 {:title   "Generic Template"
-                                                                                 :payload "payload"})]})
+                                                                                 :payload "generic-template"})]})
+                                                                (send-api/make-element-generic-object
+                                                                  {:title    "Template de type list"
+                                                                   :subtitle "Ils permettent de présenter l'information sous forme d'une liste."
+                                                                   :buttons  [(send-api/make-postback-button
+                                                                                {:title   "List Template"
+                                                                                 :payload "payload"})]}))}})))
+(defn routing [entry]
+  (let [sender-id (keyword (str (get-in entry [:sender :id])))]
+    (post-messenger sender-id :message {:text "Explorez les différentes sections :"})
+    (post-messenger sender-id :message {:attachment {:type    "template"
+                                                     :payload (send-api/make-generic-template
+                                                                (send-api/make-element-generic-object
+                                                                  {:title    "Template de type bouton"
+                                                                   :subtitle "Les boutons sont les call-to-action de messenger."
+                                                                   :buttons  [(send-api/make-postback-button
+                                                                                {:title   "Button Template"
+                                                                                 :payload "button-template"})]})
+                                                                (send-api/make-element-generic-object
+                                                                  {:title    "Template de type générique"
+                                                                   :subtitle "Ils permettent de présenter l'information."
+                                                                   :buttons  [(send-api/make-postback-button
+                                                                                {:title   "Generic Template"
+                                                                                 :payload "generic-template"})]})
                                                                 (send-api/make-element-generic-object
                                                                   {:title    "Template de type list"
                                                                    :subtitle "Ils permettent de présenter l'information sous forme d'une liste."
@@ -45,8 +68,10 @@
           (messenger-route
             :routing
             (fn [entry]
-              (println entry)
-              (if (= (get-in entry [:postback :payload]) "button-template")
-                :button-template-start
-                :end))
-            (fn [entry]))))
+              (println "entry")
+              (let [payload (get-in entry [:postback :payload])]
+                (condp = payload
+                      "button-template" :button-template-start
+                      "generic-template" :generic-template-start
+                      :default :end)))
+            routing)))

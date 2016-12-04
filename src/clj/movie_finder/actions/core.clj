@@ -8,6 +8,7 @@
 
 (defn context [& routes]
   (let [context-map (apply conj routes)]
+    (println context-map)
     (fn [entry state]
       (let [transition-fn (get-in context-map [state :transition-fn])
             next-state (transition-fn entry)]

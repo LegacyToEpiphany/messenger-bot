@@ -8,6 +8,7 @@
             [movie-finder.actions.core :refer [context routes]]
             [movie-finder.actions.intro :refer [intro-route]]
             [movie-finder.actions.button-template :refer [button-template-route]]
+            [movie-finder.actions.generic-template :refer [generic-template-route]]
             [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout]]))
 
 ;; ========================== WebToken validation =============================
@@ -26,7 +27,8 @@
 (def input-chan (chan 1))
 
 (def fsm (context (routes intro-route
-                          button-template-route)))
+                          button-template-route
+                          generic-template-route)))
 
 ;; rajouter un timeout pour éteindre close la FSM just in case
 (defn simple-fsm [chan]
