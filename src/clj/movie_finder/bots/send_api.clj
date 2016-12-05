@@ -4,7 +4,6 @@
 
 ;; TODO Spec functions
 ;; TODO Integrate Messenger Extension
-;; TODO Make Share button for generic template
 ;; TODO Make the URL Button with URL Extension a true standard
 ;; TODO Make buy button
 ;; TODO Make Log-in button
