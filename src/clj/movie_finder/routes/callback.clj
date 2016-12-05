@@ -7,9 +7,9 @@
             [movie-finder.bots.core :as bots]
             [movie-finder.actions.core :refer [context routes]]
             [movie-finder.actions.intro :refer [intro-route]]
-            [movie-finder.actions.button-template :refer [button-template-route]]
-            [movie-finder.actions.generic-template :refer [generic-template-route]]
-            [movie-finder.actions.list-template :refer [list-template-route]]
+    ;;[movie-finder.actions.button-template :refer [button-template-route]]
+    ;;      [movie-finder.actions.generic-template :refer [generic-template-route]]
+    ;;      [movie-finder.actions.list-template :refer [list-template-route]]
             [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout pub sub]]))
 
 ;; ========================== WebToken validation =============================
@@ -25,9 +25,10 @@
 ; ========================== Webhook Router/Handler ==========================
 
 (def fsm (context (routes intro-route
-                          button-template-route
-                          generic-template-route
-                          list-template-route)))
+                          ;;button-template-route
+                          ;;generic-template-route
+                          ;;list-template-route
+                          )))
 
 (def webhooks (chan 1024))
 (def app-state (atom {}))
@@ -64,30 +65,46 @@
   "State Machine that keeps user's state in memory."
   [delivery read message postback]
   (go
-    (loop [state :start]
+    (loop [state :start
+           delivery-timestamp (System/currentTimeMillis)
+           read-timestamp (System/currentTimeMillis)]
+      (println "State: " state)
       (let [[entry c] (alts! [delivery read message postback])]
-        (println entry)
-        (println state)
-        (if (= c message)
-          (let [next-state (fsm entry state)]
-            (println next-state)
-            (if (= next-state :end)
-              (comment (do
-                         ;; think how we should handle user's termination
-                         (close! chan)
-                         (swap! app-state dissoc (keyword (str (get-in entry [:sender :id]))))))
-              (recur next-state))))))))
+        (if (= state :start)
+          (let [next-state (fsm entry state :message)]
+            (recur next-state
+                   delivery-timestamp
+                   read-timestamp))
+          (condp = c
+            message (let [next-state (fsm entry state :message)]
+                      (recur next-state
+                             delivery-timestamp
+                             read-timestamp))
+            delivery (recur state
+                            (get-in entry [:delivery :watermark])
+                            read-timestamp)
+            read (if (<= read-timestamp (get-in entry [:read :watermark]))
+                   (let [next-state (fsm entry state :read)]
+                     (println "read-timestamp" (get-in entry [:read :watermark]))
+                     (recur next-state
+                            delivery-timestamp
+                            (get-in entry [:read :watermark]))))
+            :default (do
+                       (println "default")
+                       (recur state
+                              delivery-timestamp
+                              read-timestamp))))))))
 
 (defn read-process
   "Manage Read Inputs"
   []
   (let [c (chan 1)]
-    (sub p :delivery c)
+    (sub p :read c)
     (go
       (loop []
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
-                read-chan (get-in @app-state [sender-id :message])]
+                read-chan (get-in @app-state [sender-id :read])]
             (>!! read-chan entry)
             ;; Do anything you need to with read inputs
             (println "Read"))
@@ -97,14 +114,15 @@
   "Manage Delivery Inputs"
   []
   (let [c (chan 1)]
-    (sub p :read c)
+    (sub p :delivery c)
     (go
       (loop []
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
-                delivery-chan (get-in @app-state [sender-id :message])]
+                delivery-chan (get-in @app-state [sender-id :delivery])]
             (>!! delivery-chan entry)
             ;; Do anything you need to with delivery inputs
+            (println entry)
             (println "Delivery"))
           (recur))))))
 
@@ -133,8 +151,9 @@
       (loop []
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
-                postback-chan (get-in @app-state [sender-id :message])]
+                postback-chan (get-in @app-state [sender-id :postback])]
             (>!! postback-chan entry)
+            (println entry)
             (println "Postback"))
           ;; Do anything you want with postback inputs
           (recur))))))
