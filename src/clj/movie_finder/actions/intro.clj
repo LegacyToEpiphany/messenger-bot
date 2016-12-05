@@ -33,7 +33,7 @@
                                                                    :subtitle "Ils permettent de présenter l'information sous forme d'une liste."
                                                                    :buttons  [(send-api/make-postback-button
                                                                                 {:title   "List Template"
-                                                                                 :payload "payload"})]}))}})))
+                                                                                 :payload "list-template"})]}))}})))
 (defn routing [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]
     (post-messenger sender-id :message {:text "Explorez les différentes sections :"})
@@ -56,7 +56,7 @@
                                                                    :subtitle "Ils permettent de présenter l'information sous forme d'une liste."
                                                                    :buttons  [(send-api/make-postback-button
                                                                                 {:title   "List Template"
-                                                                                 :payload "payload"})]}))}})))
+                                                                                 :payload "list-template"})]}))}})))
 
 
 (def intro-route
@@ -73,5 +73,6 @@
                 (condp = payload
                       "button-template" :button-template-start
                       "generic-template" :generic-template-start
+                      "list-template" :list-template-start
                       :default :end)))
             routing)))
