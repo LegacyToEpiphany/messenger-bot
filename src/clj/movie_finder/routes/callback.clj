@@ -80,15 +80,22 @@
                       (recur next-state
                              delivery-timestamp
                              read-timestamp))
-            delivery (recur state
-                            (get-in entry [:delivery :watermark])
-                            read-timestamp)
+            delivery (if (<= delivery-timestamp (get-in entry [:delivery :watermark]))
+                       (let [next-state (fsm entry state :delivery)]
+                         (println "delivery-timestamp" (get-in entry [:delivery :watermark]))
+                         (recur next-state
+                                (get-in entry [:delivery :watermark])
+                                read-timestamp)))
             read (if (<= read-timestamp (get-in entry [:read :watermark]))
                    (let [next-state (fsm entry state :read)]
                      (println "read-timestamp" (get-in entry [:read :watermark]))
                      (recur next-state
                             delivery-timestamp
                             (get-in entry [:read :watermark]))))
+            postback (let [next-state (fsm entry state :postback)]
+                       (recur next-state
+                              delivery-timestamp
+                              read-timestamp))
             :default (do
                        (println "default")
                        (recur state

@@ -11,7 +11,7 @@
   (let [context-map (apply conj routes)]
     (println context-map)
     (fn [entry state type]
-      (if-not (= (get-in context-map [state :type]) type)
+      (if-not (contains? (get-in context-map [state :type]) type)
         state
         (let [transition-fn (get-in context-map [state :transition-fn])
               next-state (transition-fn entry)
