@@ -45,10 +45,7 @@
   (let [sender-id (keyword (str (get-in entry [:sender :id])))
         delivery-timestamp (get-in entry [:delivery :watermark])]
     (typing-on sender-id)
-    (Thread/sleep 3000)
     (post-messenger sender-id :message {:text "Pour information je sais également quand votre téléphone reçoit mes messages et quand vous les lisez \uD83D\uDE0E \uD83D\uDE0E \uD83D\uDE0E !!!"})
-    (typing-on sender-id)
-    (Thread/sleep 3000)
     (post-messenger sender-id :message {:text (str "Votre téléphone a reçu le dernier message à "
                                                    (.getHours (Date. (long delivery-timestamp))) "h"
                                                    (.getMinutes (Date. (long delivery-timestamp))) " et "

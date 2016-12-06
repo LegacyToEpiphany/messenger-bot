@@ -8,8 +8,8 @@
             [movie-finder.actions.core :refer [context routes]]
             [movie-finder.actions.intro :refer [intro-route]]
             [movie-finder.actions.content :refer [content-route]]
-    ;;[movie-finder.actions.button-template :refer [button-template-route]]
-    ;;      [movie-finder.actions.generic-template :refer [generic-template-route]]
+            [movie-finder.actions.button-template :refer [button-template-route]]
+            [movie-finder.actions.generic-template :refer [generic-template-route]]
     ;;      [movie-finder.actions.list-template :refer [list-template-route]]
             [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout pub sub sliding-buffer]]))
 
@@ -27,8 +27,8 @@
 
 (def fsm (context (routes intro-route
                           content-route
-                          ;;button-template-route
-                          ;;generic-template-route
+                          button-template-route
+                          generic-template-route
                           ;;list-template-route
                           )))
 
@@ -37,8 +37,9 @@
 
 (declare fsm-process)
 
-(def to-pub (chan 1))
+(def to-pub (chan 1024))
 (def p (pub to-pub (fn [entry]
+                     (println "Topic choosing" entry)
                      (condp #(contains? %2 %1) entry
                        :delivery :delivery
                        :read :read
@@ -60,6 +61,7 @@
                     :message  message
                     :postback postback})
             (fsm-process delivery read message postback))))
+      (println "Put value into to-sub: " entry)
       (>!! to-pub entry)
       (recur))))
 
@@ -151,6 +153,7 @@
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
                 postback-chan (get-in @app-state [sender-id :postback])]
+            (println "POSTBACK event has been recieved!")
             (>!! postback-chan entry))
           ;; Do anything you want with postback inputs
           (recur))))))
@@ -166,6 +169,7 @@
   Note the Multiple responses are possible for each webhook type based on payload
   or text/attachment... content."
   [entries]
+  (println "Webhook received")
   (dorun
     (map (fn [{messaging :messaging}]
            (dorun
