@@ -19,7 +19,7 @@
     (post-messenger sender-id :message {:text "Voici une image classique :"})
     (typing-on sender-id)
     (Thread/sleep 2000)
-    (post-messenger sender-id :message {:attachment {:type "image"
+    (post-messenger sender-id :message {:attachment {:type    "image"
                                                      :payload {:url "http://www.frenchweb.fr/wp-content/uploads/2013/06/Accelerateur1.png"}}})))
 
 (defn content-audio-action [entry]
@@ -27,7 +27,7 @@
     (typing-on sender-id)
     (Thread/sleep 5000)
     (post-messenger sender-id :message {:text "Voici un fichier mp3 :"})
-    (post-messenger sender-id :message {:attachment {:type "audio"
+    (post-messenger sender-id :message {:attachment {:type    "audio"
                                                      :payload {:url "https://ia800500.us.archive.org/5/items/aesop_fables_volume_one_librivox/fables_01_17_aesop.mp3"}}})))
 
 (defn content-video-action [entry]
@@ -35,8 +35,8 @@
     (typing-on sender-id)
     (Thread/sleep 5000)
     (post-messenger sender-id :message {:text "Voici un fichier vidéo : (coming after uploading)"})
-    (comment (post-messenger sender-id :message {:attachment {:type    "video"
-                                                              :payload {:url "https://youtu.be/51CHPYYKUoE"}}}))))
+    (post-messenger sender-id :message {:attachment {:type    "video"
+                                                     :payload {:url "https://video.xx.fbcdn.net/v/t42.3356-2/15398718_1254214061316970_465507964497690624_n.mp4/video-1481016101.mp4?vabr=422381&oh=eb83024ebd63e211dca2335248aa3b8a&oe=584801BF"}}})))
 
 
 (def content-route

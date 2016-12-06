@@ -8,12 +8,12 @@
 
 (defn intro-action [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]
-    (post-messenger sender-id :message {:text "Bonjour et bienvenue dans ce bot de Showcase !"})))
+    (post-messenger sender-id :message {:text "Bonjour et bienvenue dans ce bot de Showcase !"})
+    (typing-on sender-id)))
 
 (defn my-name-action [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]
     (typing-on sender-id)
-    (Thread/sleep 2000)
     (post-messenger sender-id :message {:text "Je m'appelle Lambda et je vais vous montrez l'ensemble des possibilités offertes par la plateforme Messenger !"})))
 
 (defn your-info-explanation-action [entry]

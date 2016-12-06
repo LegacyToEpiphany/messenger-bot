@@ -11,7 +11,7 @@
     ;;[movie-finder.actions.button-template :refer [button-template-route]]
     ;;      [movie-finder.actions.generic-template :refer [generic-template-route]]
     ;;      [movie-finder.actions.list-template :refer [list-template-route]]
-            [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout pub sub]]))
+            [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout pub sub sliding-buffer]]))
 
 ;; ========================== WebToken validation =============================
 (defn validate-webhook-token
@@ -50,10 +50,10 @@
     (when-let [entry (<! webhooks)]
       (let [sender-id (keyword (str (get-in entry [:sender :id])))]
         (if-not (sender-id @app-state)
-          (let [delivery (chan 1)
-                read (chan 1)
-                message (chan 1)
-                postback (chan 1)]
+          (let [delivery (chan (sliding-buffer 1))
+                read (chan (sliding-buffer 1))
+                message (chan (sliding-buffer 1))
+                postback (chan (sliding-buffer 1))]
             (swap! app-state assoc sender-id
                    {:delivery delivery
                     :read     read
@@ -70,39 +70,32 @@
     (loop [state :start
            delivery-timestamp (System/currentTimeMillis)
            read-timestamp (System/currentTimeMillis)]
+
       (println "State: " state)
       (let [[entry c] (alts! [delivery read message postback])]
-        (if (= state :start)
-          (let [next-state (fsm entry state :message)]
-            (recur next-state
-                   delivery-timestamp
-                   read-timestamp))
-          (condp = c
-            message (let [next-state (fsm entry state :message)]
-                      (recur next-state
-                             delivery-timestamp
-                             read-timestamp))
-            delivery (if (<= delivery-timestamp (get-in entry [:delivery :watermark]))
-                       (let [next-state (fsm entry state :delivery)]
-                         (println "delivery-timestamp" (get-in entry [:delivery :watermark]))
-                         (recur next-state
-                                (get-in entry [:delivery :watermark])
-                                read-timestamp)))
-            read (if (<= read-timestamp (get-in entry [:read :watermark]))
-                   (let [next-state (fsm entry state :read)]
-                     (println "read-timestamp" (get-in entry [:read :watermark]))
+        (condp = c
+          message (let [next-state (fsm entry state :message)]
+                    (recur next-state
+                           delivery-timestamp
+                           read-timestamp))
+          delivery (if (<= delivery-timestamp (get-in entry [:delivery :watermark]))
+                     (let [next-state (fsm entry state :delivery)]
+                       (recur next-state
+                              (get-in entry [:delivery :watermark])
+                              read-timestamp)))
+          read (if (<= read-timestamp (get-in entry [:read :watermark]))
+                 (let [next-state (fsm entry state :read)]
+                   (recur next-state
+                          delivery-timestamp
+                          (get-in entry [:read :watermark]))))
+          postback (let [next-state (fsm entry state :postback)]
                      (recur next-state
                             delivery-timestamp
-                            (get-in entry [:read :watermark]))))
-            postback (let [next-state (fsm entry state :postback)]
-                       (recur next-state
-                              delivery-timestamp
-                              read-timestamp))
-            :default (do
-                       (println "default")
-                       (recur state
-                              delivery-timestamp
-                              read-timestamp))))))))
+                            read-timestamp))
+          :default (do
+                     (recur state
+                            delivery-timestamp
+                            read-timestamp)))))))
 
 (defn read-process
   "Manage Read Inputs"
@@ -114,10 +107,10 @@
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
                 read-chan (get-in @app-state [sender-id :read])]
+            (println "READ event has been recieved!")
             (>!! read-chan entry)
             ;; Do anything you need to with read inputs
-            (println "Read"))
-          (recur))))))
+            (recur)))))))
 
 (defn delivery-process
   "Manage Delivery Inputs"
@@ -131,9 +124,7 @@
                 delivery-chan (get-in @app-state [sender-id :delivery])]
             (>!! delivery-chan entry)
             ;; Do anything you need to with delivery inputs
-            (println entry)
-            (println "Delivery"))
-          (recur))))))
+            (recur)))))))
 
 (defn message-process
   "Manage Message Inputs"
@@ -148,7 +139,6 @@
                 message-chan (get-in @app-state [sender-id :message])]
             (>!! message-chan entry))
           ;; Do anything you need to with message inputs
-          (println "Message")
           (recur))))))
 
 (defn postback-process
@@ -161,9 +151,7 @@
         (when-let [entry (<! c)]
           (let [sender-id (keyword (str (get-in entry [:sender :id])))
                 postback-chan (get-in @app-state [sender-id :postback])]
-            (>!! postback-chan entry)
-            (println entry)
-            (println "Postback"))
+            (>!! postback-chan entry))
           ;; Do anything you want with postback inputs
           (recur))))))
 

@@ -9,10 +9,9 @@
 
 (defn context [& routes]
   (let [context-map (apply conj routes)]
-    (println context-map)
     (fn [entry state type]
       (if-not (contains? (get-in context-map [state :type]) type)
-        state
+          state
         (let [transition-fn (get-in context-map [state :transition-fn])
               next-state (transition-fn entry)
               action-fn (get-in context-map [next-state :action-fn])]
