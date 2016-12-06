@@ -54,7 +54,7 @@
                                                                 "Découvrir les listes classiques"
                                                                 (send-api/make-postback-button
                                                                   {:title   "Continuer"
-                                                                   :payload "share-button"}))}})))
+                                                                   :payload "list-template"}))}})))
 
 (def generic-template-route
   (routes (messenger-route
@@ -79,5 +79,7 @@
             :generic-template-continue-action
             #{:postback}
             (fn [entry]
-              :button-description)
+              (if (= "list-template" (get-in entry [:postback :payload]))
+                :list-template-introduction-action
+                :generic-template-continue-action))
             generic-template-continue-action)))

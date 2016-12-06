@@ -10,7 +10,7 @@
             [movie-finder.actions.content :refer [content-route]]
             [movie-finder.actions.button-template :refer [button-template-route]]
             [movie-finder.actions.generic-template :refer [generic-template-route]]
-    ;;      [movie-finder.actions.list-template :refer [list-template-route]]
+            [movie-finder.actions.list-template :refer [list-template-route]]
             [clojure.core.async :as async :refer [go chan <! >! <!! >!! close! alts! timeout pub sub sliding-buffer]]))
 
 ;; ========================== WebToken validation =============================
@@ -29,8 +29,7 @@
                           content-route
                           button-template-route
                           generic-template-route
-                          ;;list-template-route
-                          )))
+                          list-template-route)))
 
 (def webhooks (chan 1024))
 (def app-state (atom {}))
