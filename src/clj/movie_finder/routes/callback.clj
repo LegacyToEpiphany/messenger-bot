@@ -7,6 +7,7 @@
             [movie-finder.bots.core :as bots]
             [movie-finder.actions.core :refer [context routes]]
             [movie-finder.actions.intro :refer [intro-route]]
+            [movie-finder.actions.content :refer [content-route]]
     ;;[movie-finder.actions.button-template :refer [button-template-route]]
     ;;      [movie-finder.actions.generic-template :refer [generic-template-route]]
     ;;      [movie-finder.actions.list-template :refer [list-template-route]]
@@ -25,6 +26,7 @@
 ; ========================== Webhook Router/Handler ==========================
 
 (def fsm (context (routes intro-route
+                          content-route
                           ;;button-template-route
                           ;;generic-template-route
                           ;;list-template-route

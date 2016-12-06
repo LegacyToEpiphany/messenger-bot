@@ -66,35 +66,10 @@
 
 
 
-(defn routing [entry]
-  (let [sender-id (keyword (str (get-in entry [:sender :id])))]
-    (post-messenger sender-id :message {:text "Explorez les différentes sections :"})
-    (post-messenger sender-id :message {:attachment {:type    "template"
-                                                     :payload (send-api/make-generic-template
-                                                                (send-api/make-element-generic-object
-                                                                  {:title    "Template de type bouton"
-                                                                   :subtitle "Les boutons sont les call-to-action de messenger."
-                                                                   :buttons  [(send-api/make-postback-button
-                                                                                {:title   "Button Template"
-                                                                                 :payload "button-template"})]})
-                                                                (send-api/make-element-generic-object
-                                                                  {:title    "Template de type générique"
-                                                                   :subtitle "Ils permettent de présenter l'information."
-                                                                   :buttons  [(send-api/make-postback-button
-                                                                                {:title   "Generic Template"
-                                                                                 :payload "generic-template"})]})
-                                                                (send-api/make-element-generic-object
-                                                                  {:title    "Template de type list"
-                                                                   :subtitle "Ils permettent de présenter l'information sous forme d'une liste."
-                                                                   :buttons  [(send-api/make-postback-button
-                                                                                {:title   "List Template"
-                                                                                 :payload "list-template"})]}))}})))
-
-
 (def intro-route
   (routes (messenger-route
             :start
-            #{:message :postback}
+            #{:message :postback :read}
             (fn [entry]
               :routing)
             nil)
@@ -132,18 +107,5 @@
             :read-info-action
             #{:read}
             (fn [entry]
-              :default-question)
-            read-info-action)
-          (messenger-route
-            :default-question
-            #{:read}
-            (fn [entry]
-              (if (contains? entry :read)
-                :routing)
-              (let [payload (get-in entry [:postback :payload])]
-                (condp = payload
-                      "button-template" :button-template-start
-                      "generic-template" :generic-template-start
-                      "list-template" :list-template-start
-                      :default :end)))
-            routing)))
+              :content-intro)
+            read-info-action)))
