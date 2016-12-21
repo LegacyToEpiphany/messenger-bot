@@ -50,6 +50,7 @@
     (when-let [entry (<! webhooks)]
       (let [sender-id (keyword (str (get-in entry [:sender :id])))]
         (if-not (sender-id @app-state)
+          ;;TODO: create map in let
           (let [delivery (chan (sliding-buffer 1))
                 read (chan (sliding-buffer 1))
                 message (chan (sliding-buffer 1))

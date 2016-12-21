@@ -25,8 +25,8 @@
 (defn content-video-action [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]
     (post-messenger sender-id :message {:text "Voici un fichier vidéo : (coming after uploading)"})
-    (post-messenger sender-id :message {:attachment {:type    "video"
-                                                     :payload {:url "https://video.xx.fbcdn.net/v/t42.3356-2/15398718_1254214061316970_465507964497690624_n.mp4/video-1481016101.mp4?vabr=422381&oh=eb83024ebd63e211dca2335248aa3b8a&oe=584801BF"}}})))
+    (comment (post-messenger sender-id :message {:attachment {:type    "video"
+                                                              :payload {:url "https://video.xx.fbcdn.net/v/t42.3356-2/15398718_1254214061316970_465507964497690624_n.mp4/video-1481016101.mp4?vabr=422381&oh=eb83024ebd63e211dca2335248aa3b8a&oe=584801BF"}}}))))
 
 (defn button-template-routing-action [entry]
   (let [sender-id (keyword (str (get-in entry [:sender :id])))]

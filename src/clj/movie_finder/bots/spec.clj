@@ -58,13 +58,13 @@
 (s/def :element/image_url ::url)
 (s/def :element/subtitle (s/and string? #(<= (count %) 80)))
 (s/def :generic-template/buttons (s/coll-of :button/button
-                                   :kind vector?
-                                   :max-count 3
-                                   :into []))
-(s/def :list-template/buttons (s/coll-of :button/button
                                             :kind vector?
-                                            :max-count 1
+                                            :max-count 3
                                             :into []))
+(s/def :list-template/buttons (s/coll-of :button/button
+                                         :kind vector?
+                                         :max-count 1
+                                         :into []))
 
 ;TODO: Spec that :button/type should only be a web_url type in a default_action
 (s/def :element/default_action
@@ -74,12 +74,12 @@
                    :button/fallback_url]))
 
 (s/def :generic-template/element
-        (s/keys :req-un [:element/title]
-                :opt-un [:element/item_url
-                         :element/image_url
-                         :element/subtitle
-                         :generic-template/buttons
-                         :element/default_action]))
+  (s/keys :req-un [:element/title]
+          :opt-un [:element/item_url
+                   :element/image_url
+                   :element/subtitle
+                   :generic-template/buttons
+                   :element/default_action]))
 
 (s/def :list-template/element
   (s/keys :req-un [:element/title]
@@ -143,6 +143,102 @@
           :opt-un
           [:list-template/top_element_style
            :list-template/buttons]))
+
+;; ========================== PAYLOAD AIRLINE BOARDING PASS TEMPLATE ==========
+;;https://developers.facebook.com/docs/messenger-platform/send-api-reference/airline-boardingpass-template
+
+;; FIELD OBJECT
+
+(s/def :field/label string?)
+(s/def :field/value string?)
+
+(s/def :field/field (s/keys :req-un
+                            [:field/label
+                             :field/value]))
+
+;; FLIGHT SCHEDULE OBJECT
+(def ISO-8601-based-regex #"^(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})$")
+(s/def :flight_schedule/boarding_time (s/and string? #(re-matches ISO-8601-based-regex %)))
+(s/def :flight_schedule/departure_time (s/and string? #(re-matches ISO-8601-based-regex %)))
+(s/def :flight_schedule/arrival_time (s/and string? #(re-matches ISO-8601-based-regex %)))
+
+(s/def :flight_schedule/:flight_schedule (s/keys :req-un
+                                                 [:flight_schedule/departure_time]
+                                                 :opt-un
+                                                 [:flight_schedule/boarding_time
+                                                  :flight_schedule/arrival_time]))
+
+;; AIRPORT OBJECT
+(s/def :airport/airport_code string?)
+(s/def :airport/city string?)
+(s/def :airport/terminal string?)
+(s/def :airport/gate string?)
+
+(s/def :airport/airport (s/keys :req-un
+                                [:airport/airport_code
+                                 :airport/city]
+                                :opt-un
+                                [:airport/terminal
+                                 :airport/gate]))
+
+
+;; FLIGHT INFO OBJECT
+(s/def :flight_info/flight_number string?)
+(s/def :flight_info/departure_airport :airport/airport)
+(s/def :flight_info/arrival_airport :airport/airport)
+(s/def :flight_info/flight_schedule :flight_schedule/:flight_schedule)
+
+(s/def :flight_info/flight_info (s/keys :req-un
+                                        [:flight_info/flight_number
+                                         :flight_info/departure_airport
+                                         :flight_info/arrival_airport
+                                         :flight_info/flight_schedule]))
+
+;; BOARDING PASS OBJECT
+(s/def :boarding_pass/passenger_name string?)
+(s/def :boarding_pass/pnr_number string?)
+(s/def :boarding_pass/travel_class #{"economy" "business" "first_class"})
+(s/def :boarding_pass/seat string?)
+(s/def :boarding_pass/auxiliary_fields (s/coll-of :field/field
+                                                  :kind vector?
+                                                  :max-count 5
+                                                  :into []))
+(s/def :boarding_pass/secondary_fields (s/coll-of :field/field
+                                                  :kind vector?
+                                                  :max-count 5
+                                                  :into []))
+(s/def :boarding_pass/logo_image_url ::url)
+(s/def :boarding_pass/header_image_url ::url)
+(s/def :boarding_pass/header_text_field :field/field)
+(s/def :boarding_pass/qr_code string?)
+(s/def :boarding_pass/barcode_image_url ::url)
+(s/def :boarding_pass/above_bar_code_image_url ::url)
+(s/def :boarding_pass/flight_info :flight_info/flight_info)
+
+(s/def :boarding_pass/boarding_pass
+  (s/keys :req-un
+          [:boarding_pass/passenger_name
+           :boarding_pass/pnr_number
+           :boarding_pass/logo_image_url
+           :boarding_pass/above_bar_code_image_url
+           :boarding_pass/flight_info]
+          :opt-un
+          [:boarding_pass/travel_class
+           :boarding_pass/seat
+           :boarding_pass/auxiliary_fields
+           :boarding_pass/secondary_fields
+           :boarding_pass/header_image_url
+           :boarding_pass/header_text_field
+           :boarding_pass/qr_code
+           :boarding_pass/barcode_image_url]))
+
+;; AIRLINE BOARDING PASS PAYLOAD
+(s/def :airline_boardingpass/template_type #{"airline_boardingpass"})
+(s/def :airline_boardingpass/intro_message ::url)
+(s/def :airline_boardingpass/locale ::url)
+(s/def :airline_boardingpass/theme_color ::url)
+(s/def :airline_boardingpass/boarding_pass ::url)
+
 
 ;; ========================== REGISTRY FOR ATTACHMENT OF TEMPLATE =============
 (s/def :attachment/type #{"template"})
